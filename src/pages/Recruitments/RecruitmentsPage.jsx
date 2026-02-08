@@ -1,89 +1,173 @@
-import { motion } from 'framer-motion';
-import { Briefcase, Search, Filter, MapPin, Clock, ExternalLink } from 'lucide-react';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Search, Calendar, Clock, MapPin, Briefcase, ChevronRight } from 'lucide-react';
 
 const mockRecruitments = [
-    { id: 1, title: 'Web Developer', club: 'GDSC MITS', deadline: '2026-03-01', positions: 3, applications: 25 },
-    { id: 2, title: 'Content Writer', club: 'Media Committee', deadline: '2026-02-28', positions: 2, applications: 15 },
-    { id: 3, title: 'Event Coordinator', club: 'E-Cell MITS', deadline: '2026-03-05', positions: 5, applications: 40 },
-    { id: 4, title: 'Graphic Designer', club: 'Creative Arts Club', deadline: '2026-03-10', positions: 2, applications: 18 },
+    {
+        id: 1,
+        position: 'Web Developer',
+        club: 'GDSC MITS',
+        description: 'Looking for passionate web developers to build innovative projects.',
+        skills: ['React', 'Node.js', 'TypeScript'],
+        deadline: '2026-03-01',
+        positions: 3,
+        applications: 25,
+        status: 'open',
+    },
+    {
+        id: 2,
+        position: 'Content Writer',
+        club: 'Literary Society',
+        description: 'Create engaging content for club events and social media.',
+        skills: ['Writing', 'Editing', 'Creativity'],
+        deadline: '2026-02-28',
+        positions: 2,
+        applications: 18,
+        status: 'open',
+    },
+    {
+        id: 3,
+        position: 'Graphic Designer',
+        club: 'Design Club',
+        description: 'Design posters, banners, and digital content for events.',
+        skills: ['Photoshop', 'Illustrator', 'Figma'],
+        deadline: '2026-03-05',
+        positions: 2,
+        applications: 12,
+        status: 'open',
+    },
+    {
+        id: 4,
+        position: 'Event Coordinator',
+        club: 'Cultural Committee',
+        description: 'Plan and execute cultural events and festivals.',
+        skills: ['Event Planning', 'Communication', 'Leadership'],
+        deadline: '2026-03-10',
+        positions: 4,
+        applications: 30,
+        status: 'open',
+    },
+    {
+        id: 5,
+        position: 'Data Science Intern',
+        club: 'The AI Club',
+        description: 'Work on real-world ML projects and data analysis.',
+        skills: ['Python', 'ML', 'Data Analysis'],
+        deadline: '2026-02-20',
+        positions: 2,
+        applications: 45,
+        status: 'closing_soon',
+    },
 ];
 
 export default function RecruitmentsPage() {
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const filteredRecruitments = searchQuery.trim()
+        ? mockRecruitments.filter(
+            (r) =>
+                r.position.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                r.club.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+        : mockRecruitments;
+
     return (
-        <div className="section-spacing">
+        <div className="section">
             <div className="container">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-center section-header"
-                >
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 text-purple-500 text-sm font-medium mb-6">
-                        <Briefcase className="w-4 h-4" />
-                        <span>Open Positions</span>
-                    </div>
-                    <h1 className="text-4xl sm:text-5xl font-bold font-display mb-4">
-                        <span className="text-primary">Club </span>
-                        <span className="text-gradient">Recruitments</span>
-                    </h1>
-                    <p className="text-lg text-secondary max-w-2xl mx-auto">
-                        Join the core teams of your favorite clubs. Apply for open positions and showcase your skills.
+                {/* Page Header */}
+                <div className="section-header">
+                    <h1 className="h1">Recruitments</h1>
+                    <p className="body-lg" style={{ marginTop: 'var(--space-2)', maxWidth: 560 }}>
+                        Find open positions across clubs and showcase your skills
                     </p>
-                </motion.div>
+                </div>
 
                 {/* Search */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="max-w-xl mx-auto mb-12"
-                >
-                    <div className="relative">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-tertiary" />
+                <div style={{ maxWidth: 480, marginBottom: 'var(--space-8)' }}>
+                    <div style={{ position: 'relative' }}>
+                        <Search
+                            style={{
+                                position: 'absolute',
+                                left: 12,
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                width: 18,
+                                height: 18,
+                                color: 'var(--text-muted)',
+                            }}
+                        />
                         <input
                             type="text"
                             placeholder="Search positions..."
-                            className="input pl-12 w-full"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="input"
+                            style={{ paddingLeft: 40 }}
                         />
                     </div>
-                </motion.div>
+                </div>
 
                 {/* Recruitments List */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {mockRecruitments.map((recruitment, i) => (
-                        <motion.div
-                            key={recruitment.id}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: i * 0.1 }}
-                            className="glass-card group hover:border-indigo-500/30 transition-colors"
-                        >
-                            <div className="flex items-start justify-between mb-4">
-                                <div>
-                                    <h3 className="text-xl font-bold font-display text-primary group-hover:text-indigo-500 transition-colors">
-                                        {recruitment.title}
-                                    </h3>
-                                    <p className="text-secondary">{recruitment.club}</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    {filteredRecruitments.map((recruitment) => (
+                        <div key={recruitment.id} className="card">
+                            <div className="flex items-center justify-between" style={{ flexWrap: 'wrap', gap: 'var(--space-4)' }}>
+                                <div style={{ flex: 1, minWidth: 200 }}>
+                                    <div className="flex items-center gap-4 mb-2">
+                                        <h3 className="h3">{recruitment.position}</h3>
+                                        <span
+                                            className={`badge ${recruitment.status === 'closing_soon' ? 'badge-warning' : 'badge-success'
+                                                }`}
+                                        >
+                                            {recruitment.status === 'closing_soon' ? 'Closing Soon' : 'Open'}
+                                        </span>
+                                    </div>
+                                    <p className="body-sm" style={{ marginBottom: 'var(--space-3)' }}>
+                                        {recruitment.description}
+                                    </p>
+                                    <div className="flex gap-4" style={{ flexWrap: 'wrap', fontSize: 13, color: 'var(--text-muted)' }}>
+                                        <span className="flex items-center gap-2">
+                                            <Briefcase style={{ width: 14, height: 14 }} />
+                                            {recruitment.club}
+                                        </span>
+                                        <span className="flex items-center gap-2">
+                                            <Calendar style={{ width: 14, height: 14 }} />
+                                            Deadline:{' '}
+                                            {new Date(recruitment.deadline).toLocaleDateString('en-IN', {
+                                                day: 'numeric',
+                                                month: 'short',
+                                            })}
+                                        </span>
+                                        <span>{recruitment.positions} positions</span>
+                                        <span>{recruitment.applications} applications</span>
+                                    </div>
                                 </div>
-                                <span className="px-3 py-1 rounded-full bg-green-500/10 text-green-500 text-sm font-medium">
-                                    Open
-                                </span>
+                                <button className="btn btn-primary">
+                                    Apply Now
+                                    <ChevronRight style={{ width: 16, height: 16 }} />
+                                </button>
                             </div>
 
-                            <div className="flex flex-wrap gap-4 mb-6 text-sm text-secondary">
-                                <span className="flex items-center gap-1">
-                                    <Clock className="w-4 h-4" />
-                                    Deadline: {new Date(recruitment.deadline).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
-                                </span>
-                                <span>{recruitment.positions} positions</span>
-                                <span>{recruitment.applications} applications</span>
+                            {/* Skills */}
+                            <div className="flex gap-2 mt-4" style={{ flexWrap: 'wrap' }}>
+                                {recruitment.skills.map((skill) => (
+                                    <span key={skill} className="badge">
+                                        {skill}
+                                    </span>
+                                ))}
                             </div>
-
-                            <button className="btn btn-primary w-full">
-                                Apply Now
-                            </button>
-                        </motion.div>
+                        </div>
                     ))}
                 </div>
+
+                {/* Empty State */}
+                {filteredRecruitments.length === 0 && (
+                    <div className="empty-state">
+                        <Search className="empty-state-icon" />
+                        <h3 className="empty-state-title">No positions found</h3>
+                        <p className="empty-state-text">Try adjusting your search criteria</p>
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -1,19 +1,11 @@
 import { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Search, Users, Sparkles } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { clubs, clubCategories, getClubsByCategory } from '../../data/clubs';
-import ClubCard from '../../components/clubs/ClubCard';
-import { staggerContainer } from '../../animations/variants';
 
-const categoryTabs = [
-    { id: 'all', name: 'All Clubs', count: clubs.length },
-    ...Object.entries(clubCategories).map(([key, value]) => ({
-        id: value.id,
-        name: value.name,
-        icon: value.icon,
-        count: getClubsByCategory(value.id).length,
-    })),
+const categories = [
+    { id: 'all', name: 'All Clubs' },
+    ...Object.values(clubCategories),
 ];
 
 export default function ClubsPage() {
@@ -24,13 +16,13 @@ export default function ClubsPage() {
         let result = clubs;
 
         if (activeCategory !== 'all') {
-            result = result.filter(club => club.category === activeCategory);
+            result = result.filter((club) => club.category === activeCategory);
         }
 
         if (searchQuery.trim()) {
             const query = searchQuery.toLowerCase();
             result = result.filter(
-                club =>
+                (club) =>
                     club.name.toLowerCase().includes(query) ||
                     club.coordinator.toLowerCase().includes(query)
             );
@@ -39,112 +31,108 @@ export default function ClubsPage() {
         return result;
     }, [activeCategory, searchQuery]);
 
+    const getCategoryCount = (id) => {
+        if (id === 'all') return clubs.length;
+        return getClubsByCategory(id).length;
+    };
+
     return (
-        <div className="section-spacing">
+        <div className="section">
             <div className="container">
                 {/* Page Header */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-center section-header"
-                >
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/10 text-indigo-500 text-sm font-medium mb-6">
-                        <Sparkles className="w-4 h-4" />
-                        <span>70+ Active Clubs</span>
-                    </div>
-                    <h1 className="text-4xl sm:text-5xl font-bold font-display mb-4">
-                        <span className="text-primary">Student </span>
-                        <span className="text-gradient">Clubs & Societies</span>
-                    </h1>
-                    <p className="text-lg text-secondary max-w-2xl mx-auto">
-                        Explore all 70+ student-run clubs across technology, cultural,
-                        sports, and professional domains at MITS Gwalior.
+                <div className="section-header">
+                    <h1 className="h1">Student Clubs</h1>
+                    <p className="body-lg" style={{ marginTop: 'var(--space-2)', maxWidth: 560 }}>
+                        Explore 70+ student-run clubs across technology, cultural, sports, and professional domains.
                     </p>
-                </motion.div>
+                </div>
 
-                {/* Search Bar */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="max-w-xl mx-auto mb-10"
-                >
-                    <div className="relative">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-tertiary" />
+                {/* Search */}
+                <div style={{ maxWidth: 480, marginBottom: 'var(--space-6)' }}>
+                    <div style={{ position: 'relative' }}>
+                        <Search
+                            style={{
+                                position: 'absolute',
+                                left: 12,
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                width: 18,
+                                height: 18,
+                                color: 'var(--text-muted)',
+                            }}
+                        />
                         <input
                             type="text"
                             placeholder="Search clubs by name or coordinator..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="input pl-12 w-full"
+                            className="input"
+                            style={{ paddingLeft: 40 }}
                         />
                     </div>
-                </motion.div>
+                </div>
 
                 {/* Category Tabs */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="flex flex-wrap justify-center gap-2 mb-12"
+                <div
+                    style={{
+                        display: 'flex',
+                        gap: 'var(--space-2)',
+                        flexWrap: 'wrap',
+                        marginBottom: 'var(--space-8)',
+                    }}
                 >
-                    {categoryTabs.map((tab) => (
+                    {categories.map((cat) => (
                         <button
-                            key={tab.id}
-                            onClick={() => setActiveCategory(tab.id)}
-                            className={`
-                px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-200
-                ${activeCategory === tab.id
-                                    ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/25'
-                                    : 'bg-secondary text-secondary hover:bg-tertiary'}
-              `}
+                            key={cat.id}
+                            onClick={() => setActiveCategory(cat.id)}
+                            className={`btn ${activeCategory === cat.id ? 'btn-primary' : 'btn-secondary'}`}
                         >
-                            {tab.icon && <span className="mr-1.5">{tab.icon}</span>}
-                            {tab.name}
-                            <span className="ml-1.5 opacity-70">({tab.count})</span>
+                            {cat.icon && <span style={{ marginRight: 4 }}>{cat.icon}</span>}
+                            {cat.name}
+                            <span className="muted" style={{ marginLeft: 4 }}>({getCategoryCount(cat.id)})</span>
                         </button>
                     ))}
-                </motion.div>
-
-                {/* Stats */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12"
-                >
-                    {[
-                        { label: 'Total Clubs', value: '70+', icon: Users },
-                        { label: 'Tech Clubs', value: getClubsByCategory('technology').length },
-                        { label: 'Cultural Clubs', value: getClubsByCategory('cultural').length },
-                        { label: 'Professional Bodies', value: getClubsByCategory('professional').length },
-                    ].map((stat, i) => (
-                        <div key={i} className="glass-card text-center py-4">
-                            <p className="text-2xl font-bold text-gradient">{stat.value}</p>
-                            <p className="text-sm text-secondary">{stat.label}</p>
-                        </div>
-                    ))}
-                </motion.div>
+                </div>
 
                 {/* Clubs Grid */}
-                <motion.div
-                    variants={staggerContainer}
-                    initial="initial"
-                    animate="animate"
-                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-                >
-                    {filteredClubs.map((club, index) => (
-                        <Link key={club.id} to={`/clubs/${club.id}`}>
-                            <ClubCard club={club} index={index} />
+                <div className="grid grid-4">
+                    {filteredClubs.map((club) => (
+                        <Link key={club.id} to={`/clubs/${club.id}`} className="card card-interactive">
+                            <div className="flex items-center gap-4" style={{ marginBottom: 'var(--space-3)' }}>
+                                <div
+                                    style={{
+                                        width: 48,
+                                        height: 48,
+                                        borderRadius: 'var(--radius-lg)',
+                                        background: 'var(--bg-tertiary)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontSize: 18,
+                                        fontWeight: 600,
+                                        color: 'var(--primary-600)',
+                                    }}
+                                >
+                                    {club.name[0]}
+                                </div>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                    <h3 className="h4 line-clamp-1">{club.name}</h3>
+                                    <p className="muted" style={{ fontSize: 13 }}>
+                                        {clubCategories[club.category]?.name || 'Club'}
+                                    </p>
+                                </div>
+                            </div>
+                            <p className="body-sm line-clamp-1">{club.coordinator}</p>
                         </Link>
                     ))}
-                </motion.div>
+                </div>
 
+                {/* Empty State */}
                 {filteredClubs.length === 0 && (
-                    <div className="text-center py-16">
-                        <div className="text-6xl mb-4">🔍</div>
-                        <h3 className="text-xl font-semibold text-primary mb-2">No clubs found</h3>
-                        <p className="text-secondary">Try adjusting your search or filter criteria</p>
+                    <div className="empty-state">
+                        <Search className="empty-state-icon" />
+                        <h3 className="empty-state-title">No clubs found</h3>
+                        <p className="empty-state-text">Try adjusting your search or filter criteria</p>
                     </div>
                 )}
             </div>

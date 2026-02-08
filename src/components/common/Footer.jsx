@@ -1,8 +1,5 @@
-import { motion } from 'framer-motion';
-import {
-    Github, Twitter, Instagram, Linkedin, Mail,
-    MapPin, Phone, ExternalLink, Heart
-} from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Mail, MapPin, Github, Twitter, Linkedin } from 'lucide-react';
 
 const footerLinks = {
     platform: [
@@ -12,153 +9,117 @@ const footerLinks = {
         { name: 'Sponsors', href: '/sponsors' },
     ],
     resources: [
-        { name: 'Documentation', href: '/docs' },
-        { name: 'API', href: '/api' },
-        { name: 'Help Center', href: '/help' },
-        { name: 'Contact', href: '/contact' },
+        { name: 'Documentation', href: '#' },
+        { name: 'API', href: '#' },
+        { name: 'Help Center', href: '#' },
+        { name: 'Contact', href: '#' },
     ],
     legal: [
-        { name: 'Privacy Policy', href: '/privacy' },
-        { name: 'Terms of Service', href: '/terms' },
-        { name: 'Cookie Policy', href: '/cookies' },
+        { name: 'Privacy Policy', href: '#' },
+        { name: 'Terms of Service', href: '#' },
+        { name: 'Cookie Policy', href: '#' },
     ],
 };
 
-const socialLinks = [
-    { name: 'GitHub', icon: Github, href: 'https://github.com' },
-    { name: 'Twitter', icon: Twitter, href: 'https://twitter.com' },
-    { name: 'Instagram', icon: Instagram, href: 'https://instagram.com' },
-    { name: 'LinkedIn', icon: Linkedin, href: 'https://linkedin.com' },
-];
-
 export default function Footer() {
-    const currentYear = new Date().getFullYear();
-
     return (
-        <footer className="relative overflow-hidden border-t border-primary/10">
-            {/* Gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-indigo-500/5 to-transparent pointer-events-none" />
-
-            <div className="container relative py-16">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-8">
+        <footer className="footer">
+            <div className="container">
+                <div className="footer-grid">
                     {/* Brand Column */}
-                    <div className="lg:col-span-2">
-                        <a href="/" className="flex items-center gap-3 mb-6">
-                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
-                                <span className="text-white font-bold text-lg font-display">U</span>
+                    <div>
+                        <Link to="/" className="flex items-center gap-3 mb-4">
+                            <div
+                                style={{
+                                    width: 36,
+                                    height: 36,
+                                    borderRadius: 8,
+                                    background: 'var(--primary-600)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                }}
+                            >
+                                <span style={{ color: 'white', fontWeight: 700, fontSize: 16 }}>U</span>
                             </div>
-                            <div>
-                                <span className="text-2xl font-bold font-display text-gradient">UEMS</span>
-                            </div>
-                        </a>
-
-                        <p className="text-secondary mb-6 max-w-sm">
-                            University Event Management System - The centralized digital platform
-                            for MITS Gwalior's clubs, events, and opportunities.
+                            <span style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>
+                                UEMS
+                            </span>
+                        </Link>
+                        <p className="body-sm" style={{ maxWidth: 280, marginBottom: 'var(--space-4)' }}>
+                            University Event Management System - The centralized digital platform for MITS Gwalior's
+                            clubs, events, and opportunities.
                         </p>
-
-                        {/* Contact Info */}
-                        <div className="space-y-3 text-secondary">
-                            <div className="flex items-center gap-2">
-                                <MapPin className="w-4 h-4 text-indigo-500" />
-                                <span>MITS Gwalior, Madhya Pradesh, India</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Mail className="w-4 h-4 text-indigo-500" />
-                                <a href="mailto:uems@mitsgwalior.in" className="hover:text-indigo-500 transition-colors">
-                                    uems@mitsgwalior.in
-                                </a>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Phone className="w-4 h-4 text-indigo-500" />
-                                <span>+91 751 2409999</span>
-                            </div>
-                        </div>
-
-                        {/* Social Links */}
-                        <div className="flex items-center gap-3 mt-6">
-                            {socialLinks.map((social) => (
-                                <a
-                                    key={social.name}
-                                    href={social.href}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center text-secondary hover:bg-indigo-500 hover:text-white transition-all"
-                                    aria-label={social.name}
-                                >
-                                    <social.icon className="w-5 h-5" />
-                                </a>
-                            ))}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                            <span className="muted flex items-center gap-2">
+                                <MapPin style={{ width: 14, height: 14 }} />
+                                MITS Gwalior, Madhya Pradesh, India
+                            </span>
+                            <span className="muted flex items-center gap-2">
+                                <Mail style={{ width: 14, height: 14 }} />
+                                uems@mitsgwalior.in
+                            </span>
                         </div>
                     </div>
 
                     {/* Platform Links */}
                     <div>
-                        <h4 className="text-sm font-semibold text-primary uppercase tracking-wider mb-4">
-                            Platform
-                        </h4>
-                        <ul className="space-y-3">
-                            {footerLinks.platform.map((link) => (
-                                <li key={link.name}>
-                                    <a
-                                        href={link.href}
-                                        className="text-secondary hover:text-indigo-500 transition-colors"
-                                    >
-                                        {link.name}
-                                    </a>
-                                </li>
-                            ))}
-                        </ul>
+                        <h4 className="footer-heading">Platform</h4>
+                        {footerLinks.platform.map((link) => (
+                            <Link key={link.name} to={link.href} className="footer-link">
+                                {link.name}
+                            </Link>
+                        ))}
                     </div>
 
                     {/* Resources Links */}
                     <div>
-                        <h4 className="text-sm font-semibold text-primary uppercase tracking-wider mb-4">
-                            Resources
-                        </h4>
-                        <ul className="space-y-3">
-                            {footerLinks.resources.map((link) => (
-                                <li key={link.name}>
-                                    <a
-                                        href={link.href}
-                                        className="text-secondary hover:text-indigo-500 transition-colors inline-flex items-center gap-1"
-                                    >
-                                        {link.name}
-                                        {link.href.startsWith('http') && <ExternalLink className="w-3 h-3" />}
-                                    </a>
-                                </li>
-                            ))}
-                        </ul>
+                        <h4 className="footer-heading">Resources</h4>
+                        {footerLinks.resources.map((link) => (
+                            <Link key={link.name} to={link.href} className="footer-link">
+                                {link.name}
+                            </Link>
+                        ))}
                     </div>
 
                     {/* Legal Links */}
                     <div>
-                        <h4 className="text-sm font-semibold text-primary uppercase tracking-wider mb-4">
-                            Legal
-                        </h4>
-                        <ul className="space-y-3">
-                            {footerLinks.legal.map((link) => (
-                                <li key={link.name}>
-                                    <a
-                                        href={link.href}
-                                        className="text-secondary hover:text-indigo-500 transition-colors"
-                                    >
-                                        {link.name}
-                                    </a>
-                                </li>
-                            ))}
-                        </ul>
+                        <h4 className="footer-heading">Legal</h4>
+                        {footerLinks.legal.map((link) => (
+                            <Link key={link.name} to={link.href} className="footer-link">
+                                {link.name}
+                            </Link>
+                        ))}
                     </div>
                 </div>
 
                 {/* Bottom Bar */}
-                <div className="border-t border-primary/10 mt-12 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <p className="text-secondary text-sm text-center sm:text-left">
-                        © {currentYear} UEMS - MITS Gwalior. All rights reserved.
-                    </p>
-                    <p className="text-secondary text-sm flex items-center gap-1">
-                        Made with <Heart className="w-4 h-4 text-red-500 fill-red-500" /> by MITS Students
-                    </p>
+                <div
+                    style={{
+                        marginTop: 'var(--space-12)',
+                        paddingTop: 'var(--space-6)',
+                        borderTop: '1px solid var(--border)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        flexWrap: 'wrap',
+                        gap: 'var(--space-4)',
+                    }}
+                >
+                    <span className="muted">
+                        © {new Date().getFullYear()} UEMS MITS. All rights reserved.
+                    </span>
+                    <div className="flex items-center gap-4">
+                        <a href="#" className="footer-link" style={{ padding: 0 }}>
+                            <Github style={{ width: 18, height: 18 }} />
+                        </a>
+                        <a href="#" className="footer-link" style={{ padding: 0 }}>
+                            <Twitter style={{ width: 18, height: 18 }} />
+                        </a>
+                        <a href="#" className="footer-link" style={{ padding: 0 }}>
+                            <Linkedin style={{ width: 18, height: 18 }} />
+                        </a>
+                    </div>
                 </div>
             </div>
         </footer>

@@ -1,11 +1,10 @@
-import { motion } from 'framer-motion';
 import { useParams, Link } from 'react-router-dom';
-import { Calendar, Clock, MapPin, Users, Share2, Heart, ArrowLeft, Tag, User } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users, ArrowLeft, Share2, Heart } from 'lucide-react';
 
 export default function EventDetailPage() {
     const { slug } = useParams();
 
-    // Mock event data - replace with API call
+    // Mock event data
     const event = {
         id: 1,
         slug: slug,
@@ -13,11 +12,11 @@ export default function EventDetailPage() {
         description: `Join us for the biggest technology festival of the year! TechFest 2026 brings together the brightest minds from across India for a celebration of innovation, creativity, and technology.
 
 This year's edition features:
-- 24-hour Hackathon with ₹1,00,000+ in prizes
-- Workshops on AI/ML, Cloud Computing, and Web3
-- Tech talks from industry leaders
-- Project exhibitions and competitions
-- Networking sessions with startup founders
+• 24-hour Hackathon with ₹1,00,000+ in prizes
+• Workshops on AI/ML, Cloud Computing, and Web3
+• Tech talks from industry leaders
+• Project exhibitions and competitions
+• Networking sessions with startup founders
 
 Whether you're a coding enthusiast, a tech entrepreneur, or just curious about the future of technology, TechFest 2026 has something for everyone.`,
         category: 'Technology',
@@ -29,7 +28,6 @@ Whether you're a coding enthusiast, a tech entrepreneur, or just curious about t
         registrations: 450,
         maxRegistrations: 500,
         price: 299,
-        image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200',
         organizer: {
             name: 'Dr. R S Jadon',
             role: 'Faculty Coordinator',
@@ -37,178 +35,254 @@ Whether you're a coding enthusiast, a tech entrepreneur, or just curious about t
         tags: ['Hackathon', 'Workshops', 'Tech Talks', 'Networking'],
     };
 
-    return (
-        <div className="section-spacing">
-            <div className="container">
-                {/* Breadcrumb */}
-                <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mb-8"
-                >
-                    <Link to="/events" className="inline-flex items-center gap-2 text-secondary hover:text-indigo-500 transition-colors">
-                        <ArrowLeft className="w-4 h-4" />
-                        <span>Back to Events</span>
-                    </Link>
-                </motion.div>
+    const spotsLeft = event.maxRegistrations - event.registrations;
+    const percentFilled = Math.round((event.registrations / event.maxRegistrations) * 100);
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+    return (
+        <div className="section">
+            <div className="container">
+                {/* Back Link */}
+                <Link
+                    to="/events"
+                    className="flex items-center gap-2 muted"
+                    style={{ marginBottom: 'var(--space-6)', textDecoration: 'none' }}
+                >
+                    <ArrowLeft style={{ width: 16, height: 16 }} />
+                    <span>Back to Events</span>
+                </Link>
+
+                <div
+                    style={{
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 360px',
+                        gap: 'var(--space-8)',
+                    }}
+                >
                     {/* Main Content */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="lg:col-span-2"
-                    >
-                        {/* Hero Image */}
-                        <div className="relative rounded-2xl overflow-hidden mb-8">
-                            <img
-                                src={event.image}
-                                alt={event.title}
-                                className="w-full h-80 object-cover"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                            <div className="absolute bottom-6 left-6 right-6">
-                                <span className="inline-block px-3 py-1 rounded-full bg-indigo-500 text-white text-sm font-medium mb-3">
-                                    {event.category}
-                                </span>
-                                <h1 className="text-3xl md:text-4xl font-bold font-display text-white">
-                                    {event.title}
-                                </h1>
-                            </div>
+                    <div>
+                        {/* Header */}
+                        <div style={{ marginBottom: 'var(--space-8)' }}>
+                            <span className="badge badge-primary" style={{ marginBottom: 'var(--space-3)' }}>
+                                {event.category}
+                            </span>
+                            <h1 className="h1" style={{ marginBottom: 'var(--space-4)' }}>
+                                {event.title}
+                            </h1>
+                            <p className="body" style={{ color: 'var(--text-secondary)' }}>
+                                Organized by <strong style={{ color: 'var(--text-primary)' }}>{event.club}</strong>
+                            </p>
                         </div>
 
-                        {/* Event Details */}
-                        <div className="glass-card mb-8">
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 rounded-xl bg-indigo-500/10 flex items-center justify-center">
-                                        <Calendar className="w-6 h-6 text-indigo-500" />
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-secondary">Date</p>
-                                        <p className="font-medium text-primary">
-                                            {new Date(event.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                                        </p>
-                                    </div>
+                        {/* Event Details Grid */}
+                        <div
+                            className="card"
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(2, 1fr)',
+                                gap: 'var(--space-6)',
+                                marginBottom: 'var(--space-8)',
+                            }}
+                        >
+                            <div className="flex items-center gap-4">
+                                <div
+                                    style={{
+                                        width: 44,
+                                        height: 44,
+                                        borderRadius: 'var(--radius-lg)',
+                                        background: 'var(--primary-50)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                    }}
+                                >
+                                    <Calendar style={{ width: 20, height: 20, color: 'var(--primary-600)' }} />
                                 </div>
-
-                                <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center">
-                                        <Clock className="w-6 h-6 text-purple-500" />
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-secondary">Time</p>
-                                        <p className="font-medium text-primary">{event.time}</p>
-                                    </div>
+                                <div>
+                                    <p className="muted" style={{ fontSize: 12 }}>Date</p>
+                                    <p style={{ fontWeight: 500 }}>
+                                        {new Date(event.date).toLocaleDateString('en-IN', {
+                                            day: 'numeric',
+                                            month: 'long',
+                                            year: 'numeric',
+                                        })}
+                                    </p>
                                 </div>
+                            </div>
 
-                                <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 rounded-xl bg-pink-500/10 flex items-center justify-center">
-                                        <MapPin className="w-6 h-6 text-pink-500" />
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-secondary">Venue</p>
-                                        <p className="font-medium text-primary">{event.venue}</p>
-                                    </div>
+                            <div className="flex items-center gap-4">
+                                <div
+                                    style={{
+                                        width: 44,
+                                        height: 44,
+                                        borderRadius: 'var(--radius-lg)',
+                                        background: 'var(--primary-50)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                    }}
+                                >
+                                    <Clock style={{ width: 20, height: 20, color: 'var(--primary-600)' }} />
                                 </div>
+                                <div>
+                                    <p className="muted" style={{ fontSize: 12 }}>Time</p>
+                                    <p style={{ fontWeight: 500 }}>{event.time}</p>
+                                </div>
+                            </div>
 
-                                <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 rounded-xl bg-cyan-500/10 flex items-center justify-center">
-                                        <Users className="w-6 h-6 text-cyan-500" />
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-secondary">Registrations</p>
-                                        <p className="font-medium text-primary">{event.registrations}/{event.maxRegistrations}</p>
-                                    </div>
+                            <div className="flex items-center gap-4">
+                                <div
+                                    style={{
+                                        width: 44,
+                                        height: 44,
+                                        borderRadius: 'var(--radius-lg)',
+                                        background: 'var(--primary-50)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                    }}
+                                >
+                                    <MapPin style={{ width: 20, height: 20, color: 'var(--primary-600)' }} />
+                                </div>
+                                <div>
+                                    <p className="muted" style={{ fontSize: 12 }}>Venue</p>
+                                    <p style={{ fontWeight: 500 }}>{event.venue}</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-4">
+                                <div
+                                    style={{
+                                        width: 44,
+                                        height: 44,
+                                        borderRadius: 'var(--radius-lg)',
+                                        background: 'var(--primary-50)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                    }}
+                                >
+                                    <Users style={{ width: 20, height: 20, color: 'var(--primary-600)' }} />
+                                </div>
+                                <div>
+                                    <p className="muted" style={{ fontSize: 12 }}>Registrations</p>
+                                    <p style={{ fontWeight: 500 }}>
+                                        {event.registrations}/{event.maxRegistrations}
+                                    </p>
                                 </div>
                             </div>
                         </div>
 
                         {/* Description */}
-                        <div className="mb-8">
-                            <h2 className="text-xl font-bold font-display text-primary mb-4">About this Event</h2>
-                            <div className="prose prose-lg text-secondary whitespace-pre-line">
+                        <div style={{ marginBottom: 'var(--space-8)' }}>
+                            <h2 className="h3" style={{ marginBottom: 'var(--space-4)' }}>
+                                About this Event
+                            </h2>
+                            <div
+                                className="body"
+                                style={{ whiteSpace: 'pre-line', maxWidth: '65ch' }}
+                            >
                                 {event.description}
                             </div>
                         </div>
 
                         {/* Tags */}
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex gap-2" style={{ flexWrap: 'wrap' }}>
                             {event.tags.map((tag) => (
-                                <span key={tag} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-secondary text-secondary text-sm">
-                                    <Tag className="w-3 h-3" />
+                                <span key={tag} className="badge">
                                     {tag}
                                 </span>
                             ))}
                         </div>
-                    </motion.div>
+                    </div>
 
                     {/* Sidebar */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                        className="space-y-6"
-                    >
-                        {/* Registration Card */}
-                        <div className="glass-card sticky top-24">
-                            <div className="text-center mb-6">
-                                <p className="text-3xl font-bold text-gradient mb-1">
+                    <div>
+                        <div
+                            className="card"
+                            style={{
+                                position: 'sticky',
+                                top: 'calc(64px + var(--space-6))',
+                            }}
+                        >
+                            {/* Price */}
+                            <div style={{ textAlign: 'center', marginBottom: 'var(--space-6)' }}>
+                                <p style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--primary-600)' }}>
                                     {event.price === 0 ? 'Free' : `₹${event.price}`}
                                 </p>
-                                <p className="text-secondary text-sm">per person</p>
+                                <p className="muted">per person</p>
                             </div>
 
                             {/* Progress */}
-                            <div className="mb-6">
-                                <div className="flex justify-between text-sm mb-2">
-                                    <span className="text-secondary">{event.registrations} registered</span>
-                                    <span className="font-medium text-primary">{Math.round((event.registrations / event.maxRegistrations) * 100)}%</span>
+                            <div style={{ marginBottom: 'var(--space-6)' }}>
+                                <div className="flex justify-between mb-2" style={{ fontSize: 13 }}>
+                                    <span className="muted">{event.registrations} registered</span>
+                                    <span style={{ fontWeight: 500 }}>{percentFilled}%</span>
                                 </div>
-                                <div className="h-2 rounded-full bg-tertiary overflow-hidden">
+                                <div
+                                    style={{
+                                        height: 6,
+                                        borderRadius: 3,
+                                        background: 'var(--bg-tertiary)',
+                                        overflow: 'hidden',
+                                    }}
+                                >
                                     <div
-                                        className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all"
-                                        style={{ width: `${(event.registrations / event.maxRegistrations) * 100}%` }}
+                                        style={{
+                                            height: '100%',
+                                            width: `${percentFilled}%`,
+                                            background: 'var(--primary-600)',
+                                            borderRadius: 3,
+                                        }}
                                     />
                                 </div>
-                                <p className="text-xs text-secondary mt-2">{event.maxRegistrations - event.registrations} spots left</p>
+                                <p className="muted" style={{ fontSize: 13, marginTop: 'var(--space-2)' }}>
+                                    {spotsLeft} spots left
+                                </p>
                             </div>
 
-                            <button className="btn btn-primary w-full py-4 text-lg mb-4">
+                            {/* CTA */}
+                            <button className="btn btn-primary btn-lg" style={{ width: '100%', marginBottom: 'var(--space-4)' }}>
                                 Register Now
                             </button>
 
-                            <div className="flex gap-3">
-                                <button className="btn btn-secondary flex-1">
-                                    <Heart className="w-4 h-4" />
-                                    <span>Save</span>
+                            <div className="flex gap-4">
+                                <button className="btn btn-secondary" style={{ flex: 1 }}>
+                                    <Heart style={{ width: 16, height: 16 }} />
+                                    Save
                                 </button>
-                                <button className="btn btn-secondary flex-1">
-                                    <Share2 className="w-4 h-4" />
-                                    <span>Share</span>
+                                <button className="btn btn-secondary" style={{ flex: 1 }}>
+                                    <Share2 style={{ width: 16, height: 16 }} />
+                                    Share
                                 </button>
                             </div>
-                        </div>
 
-                        {/* Organizer Card */}
-                        <div className="glass-card">
-                            <h3 className="font-semibold text-primary mb-4">Organized by</h3>
-                            <Link to={`/clubs/${event.club.toLowerCase().replace(/\s+/g, '-')}`} className="flex items-center gap-4">
-                                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
-                                    <span className="text-white font-bold text-lg">{event.club[0]}</span>
+                            {/* Organizer */}
+                            <div className="divider" />
+                            <div>
+                                <p className="muted" style={{ fontSize: 13, marginBottom: 'var(--space-3)' }}>
+                                    Organized by
+                                </p>
+                                <div className="flex items-center gap-4">
+                                    <div className="avatar">{event.club[0]}</div>
+                                    <div>
+                                        <p style={{ fontWeight: 500 }}>{event.club}</p>
+                                        <p className="muted" style={{ fontSize: 13 }}>{event.organizer.name}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p className="font-semibold text-primary">{event.club}</p>
-                                    <p className="text-sm text-secondary flex items-center gap-1">
-                                        <User className="w-3 h-3" />
-                                        {event.organizer.name}
-                                    </p>
-                                </div>
-                            </Link>
+                            </div>
                         </div>
-                    </motion.div>
+                    </div>
                 </div>
             </div>
+
+            {/* Responsive styles */}
+            <style>{`
+        @media (max-width: 768px) {
+          .container > div:last-child {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
         </div>
     );
 }

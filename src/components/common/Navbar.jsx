@@ -1,13 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-    Search, Menu, X, Sun, Moon, Bell, User,
-    Calendar, Users, Trophy, Sparkles, ChevronDown,
-    LogIn, UserPlus
-} from 'lucide-react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Search, Menu, X, Sun, Moon, Bell, User, Calendar, Users, Trophy, Sparkles, ChevronDown, LogIn, UserPlus } from 'lucide-react';
 import { useThemeStore, useUIStore, useAuthStore } from '../../hooks/useStore';
-import { dropdownVariants } from '../../animations/variants';
 
 const navLinks = [
     { name: 'Events', href: '/events', icon: Calendar },
@@ -18,18 +12,12 @@ const navLinks = [
 
 export default function Navbar() {
     const navigate = useNavigate();
-    const [scrolled, setScrolled] = useState(false);
+    const location = useLocation();
     const [dropdownOpen, setDropdownOpen] = useState(false);
 
     const { theme, toggleTheme } = useThemeStore();
-    const { mobileMenuOpen, toggleMobileMenu, setMobileMenuOpen } = useUIStore();
+    const { mobileMenuOpen, setMobileMenuOpen } = useUIStore();
     const { isAuthenticated, user, logout } = useAuthStore();
-
-    useEffect(() => {
-        const handleScroll = () => setScrolled(window.scrollY > 20);
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
 
     const handleLogout = () => {
         logout();
@@ -37,221 +25,263 @@ export default function Navbar() {
         navigate('/');
     };
 
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = () => setDropdownOpen(false);
+        if (dropdownOpen) {
+            document.addEventListener('click', handleClickOutside);
+            return () => document.removeEventListener('click', handleClickOutside);
+        }
+    }, [dropdownOpen]);
+
     return (
         <>
-            <motion.header
-                initial={{ y: -100 }}
-                animate={{ y: 0 }}
-                transition={{ type: 'spring', stiffness: 100, damping: 20 }}
-                className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled
-                    ? 'glass-strong shadow-lg'
-                    : 'bg-transparent'
-                    }`}
-            >
-                <nav className="container mx-auto px-6">
-                    <div className="flex items-center justify-between h-[72px]">
-                        {/* Logo */}
-                        <Link to="/" className="flex items-center gap-3 group">
-                            <div className="relative">
-                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow">
-                                    <span className="text-white font-bold text-lg font-display">U</span>
-                                </div>
-                                <div className="absolute -inset-1 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-30 blur transition-opacity" />
-                            </div>
-                            <div className="hidden sm:block">
-                                <span className="text-xl font-bold font-display text-gradient">UEMS</span>
-                                <span className="hidden md:inline text-sm text-secondary ml-2">MITS Gwalior</span>
-                            </div>
-                        </Link>
+            <header className="nav">
+                <div className="container nav-container">
+                    {/* Logo */}
+                    <Link to="/" className="flex items-center gap-3">
+                        <div
+                            style={{
+                                width: 36,
+                                height: 36,
+                                borderRadius: 8,
+                                background: 'var(--primary-600)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}
+                        >
+                            <span style={{ color: 'white', fontWeight: 700, fontSize: 16 }}>U</span>
+                        </div>
+                        <div className="hide-mobile">
+                            <span style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>
+                                UEMS
+                            </span>
+                            <span className="muted" style={{ marginLeft: 8 }}>MITS Gwalior</span>
+                        </div>
+                    </Link>
 
-                        {/* Desktop Navigation */}
-                        <div className="hidden lg:flex items-center gap-1">
+                    {/* Desktop Navigation */}
+                    <nav className="nav-links hide-mobile">
+                        {navLinks.map((link) => (
+                            <Link
+                                key={link.name}
+                                to={link.href}
+                                className={`nav-link ${location.pathname.startsWith(link.href) ? 'active' : ''}`}
+                            >
+                                <link.icon style={{ width: 16, height: 16 }} />
+                                <span>{link.name}</span>
+                            </Link>
+                        ))}
+                    </nav>
+
+                    {/* Right Side Actions */}
+                    <div className="flex items-center gap-2">
+                        {/* Theme Toggle */}
+                        <button
+                            onClick={toggleTheme}
+                            className="btn btn-ghost btn-icon-sm"
+                            aria-label="Toggle theme"
+                        >
+                            {theme === 'light' ? (
+                                <Sun style={{ width: 18, height: 18 }} />
+                            ) : (
+                                <Moon style={{ width: 18, height: 18 }} />
+                            )}
+                        </button>
+
+                        {/* Notifications */}
+                        {isAuthenticated && (
+                            <button className="btn btn-ghost btn-icon-sm" style={{ position: 'relative' }}>
+                                <Bell style={{ width: 18, height: 18 }} />
+                                <span
+                                    style={{
+                                        position: 'absolute',
+                                        top: 6,
+                                        right: 6,
+                                        width: 8,
+                                        height: 8,
+                                        borderRadius: '50%',
+                                        background: 'var(--error)',
+                                    }}
+                                />
+                            </button>
+                        )}
+
+                        {/* Auth Buttons / User Menu */}
+                        {isAuthenticated ? (
+                            <div style={{ position: 'relative' }}>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setDropdownOpen(!dropdownOpen);
+                                    }}
+                                    className="flex items-center gap-2"
+                                    style={{
+                                        padding: '6px 12px 6px 6px',
+                                        borderRadius: 'var(--radius-full)',
+                                        background: 'var(--bg-secondary)',
+                                        border: '1px solid var(--border)',
+                                        cursor: 'pointer',
+                                    }}
+                                >
+                                    <div className="avatar avatar-sm">
+                                        {user?.profile?.firstName?.[0] || 'U'}
+                                    </div>
+                                    <ChevronDown style={{ width: 14, height: 14, color: 'var(--text-muted)' }} />
+                                </button>
+
+                                {dropdownOpen && (
+                                    <div
+                                        style={{
+                                            position: 'absolute',
+                                            right: 0,
+                                            top: 'calc(100% + 8px)',
+                                            width: 220,
+                                            background: 'var(--surface)',
+                                            border: '1px solid var(--border)',
+                                            borderRadius: 'var(--radius-lg)',
+                                            boxShadow: 'var(--shadow-lg)',
+                                            overflow: 'hidden',
+                                            zIndex: 'var(--z-dropdown)',
+                                        }}
+                                    >
+                                        <div style={{ padding: 'var(--space-4)', borderBottom: '1px solid var(--border)' }}>
+                                            <p style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
+                                                {user?.profile?.firstName} {user?.profile?.lastName}
+                                            </p>
+                                            <p className="muted">{user?.email}</p>
+                                        </div>
+                                        <div style={{ padding: 'var(--space-2)' }}>
+                                            <Link
+                                                to="/dashboard"
+                                                onClick={() => setDropdownOpen(false)}
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 'var(--space-3)',
+                                                    padding: 'var(--space-2) var(--space-3)',
+                                                    borderRadius: 'var(--radius-md)',
+                                                    color: 'var(--text-secondary)',
+                                                    textDecoration: 'none',
+                                                }}
+                                                onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-secondary)'}
+                                                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                                            >
+                                                <User style={{ width: 16, height: 16 }} />
+                                                <span>Dashboard</span>
+                                            </Link>
+                                            <button
+                                                onClick={handleLogout}
+                                                style={{
+                                                    width: '100%',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 'var(--space-3)',
+                                                    padding: 'var(--space-2) var(--space-3)',
+                                                    borderRadius: 'var(--radius-md)',
+                                                    color: 'var(--error)',
+                                                    background: 'transparent',
+                                                    border: 'none',
+                                                    cursor: 'pointer',
+                                                    fontSize: 'inherit',
+                                                    fontFamily: 'inherit',
+                                                }}
+                                                onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-secondary)'}
+                                                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                                            >
+                                                <X style={{ width: 16, height: 16 }} />
+                                                <span>Logout</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-2 hide-mobile">
+                                <Link to="/login" className="btn btn-ghost">
+                                    Login
+                                </Link>
+                                <Link to="/register" className="btn btn-primary">
+                                    Sign Up
+                                </Link>
+                            </div>
+                        )}
+
+                        {/* Mobile Menu Toggle */}
+                        <button
+                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                            className="btn btn-ghost btn-icon-sm hide-desktop"
+                        >
+                            {mobileMenuOpen ? (
+                                <X style={{ width: 20, height: 20 }} />
+                            ) : (
+                                <Menu style={{ width: 20, height: 20 }} />
+                            )}
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            {/* Mobile Menu */}
+            {mobileMenuOpen && (
+                <>
+                    <div
+                        onClick={() => setMobileMenuOpen(false)}
+                        style={{
+                            position: 'fixed',
+                            inset: 0,
+                            background: 'rgba(0,0,0,0.5)',
+                            zIndex: 150,
+                        }}
+                    />
+                    <div
+                        style={{
+                            position: 'fixed',
+                            top: 0,
+                            right: 0,
+                            bottom: 0,
+                            width: 280,
+                            background: 'var(--surface)',
+                            borderLeft: '1px solid var(--border)',
+                            padding: 'var(--space-6)',
+                            zIndex: 200,
+                        }}
+                    >
+                        <div className="flex items-center justify-between mb-8">
+                            <span style={{ fontSize: 18, fontWeight: 600 }}>Menu</span>
+                            <button onClick={() => setMobileMenuOpen(false)} className="btn btn-ghost btn-icon-sm">
+                                <X style={{ width: 20, height: 20 }} />
+                            </button>
+                        </div>
+
+                        <nav style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
                             {navLinks.map((link) => (
                                 <Link
                                     key={link.name}
                                     to={link.href}
-                                    className="group flex items-center gap-2 px-4 py-2 rounded-lg text-secondary hover:text-primary hover:bg-tertiary transition-all duration-200"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    className="sidebar-link"
                                 >
-                                    <link.icon className="w-4 h-4 group-hover:text-indigo-500 transition-colors" />
-                                    <span className="font-medium">{link.name}</span>
+                                    <link.icon style={{ width: 18, height: 18 }} />
+                                    <span>{link.name}</span>
                                 </Link>
                             ))}
-                        </div>
+                        </nav>
 
-                        {/* Right Side Actions */}
-                        <div className="flex items-center gap-2">
-                            {/* Search Button */}
-                            <button className="btn-ghost btn-icon hidden sm:flex">
-                                <Search className="w-5 h-5" />
-                            </button>
-
-                            {/* Theme Toggle */}
-                            <button
-                                onClick={toggleTheme}
-                                className="btn-ghost btn-icon relative overflow-hidden"
-                                aria-label="Toggle theme"
-                            >
-                                <AnimatePresence mode="wait">
-                                    {theme === 'light' ? (
-                                        <motion.div
-                                            key="sun"
-                                            initial={{ rotate: -90, opacity: 0 }}
-                                            animate={{ rotate: 0, opacity: 1 }}
-                                            exit={{ rotate: 90, opacity: 0 }}
-                                            transition={{ duration: 0.2 }}
-                                        >
-                                            <Sun className="w-5 h-5" />
-                                        </motion.div>
-                                    ) : (
-                                        <motion.div
-                                            key="moon"
-                                            initial={{ rotate: 90, opacity: 0 }}
-                                            animate={{ rotate: 0, opacity: 1 }}
-                                            exit={{ rotate: -90, opacity: 0 }}
-                                            transition={{ duration: 0.2 }}
-                                        >
-                                            <Moon className="w-5 h-5" />
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-                            </button>
-
-                            {/* Notifications */}
-                            {isAuthenticated && (
-                                <button className="btn-ghost btn-icon relative">
-                                    <Bell className="w-5 h-5" />
-                                    <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full" />
-                                </button>
-                            )}
-
-                            {/* Auth Buttons / User Menu */}
-                            {isAuthenticated ? (
-                                <div className="relative">
-                                    <button
-                                        onClick={() => setDropdownOpen(!dropdownOpen)}
-                                        className="flex items-center gap-2 p-1.5 pr-3 rounded-full bg-secondary hover:bg-tertiary transition-colors"
-                                    >
-                                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
-                                            <span className="text-white text-sm font-semibold">
-                                                {user?.profile?.firstName?.[0] || 'U'}
-                                            </span>
-                                        </div>
-                                        <ChevronDown className="w-4 h-4 text-secondary" />
-                                    </button>
-
-                                    <AnimatePresence>
-                                        {dropdownOpen && (
-                                            <motion.div
-                                                {...dropdownVariants}
-                                                className="absolute right-0 top-full mt-2 w-56 glass-strong rounded-xl shadow-xl border border-primary/10 overflow-hidden"
-                                            >
-                                                <div className="p-3 border-b border-primary/10">
-                                                    <p className="font-semibold text-primary">{user?.profile?.firstName} {user?.profile?.lastName}</p>
-                                                    <p className="text-sm text-secondary">{user?.email}</p>
-                                                </div>
-                                                <div className="p-2">
-                                                    <Link
-                                                        to="/dashboard"
-                                                        onClick={() => setDropdownOpen(false)}
-                                                        className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-tertiary transition-colors"
-                                                    >
-                                                        <User className="w-4 h-4" />
-                                                        <span>Dashboard</span>
-                                                    </Link>
-                                                    <button
-                                                        onClick={handleLogout}
-                                                        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-tertiary transition-colors text-red-500"
-                                                    >
-                                                        <X className="w-4 h-4" />
-                                                        <span>Logout</span>
-                                                    </button>
-                                                </div>
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-                                </div>
-                            ) : (
-                                <div className="hidden sm:flex items-center gap-2">
-                                    <Link to="/login" className="btn btn-ghost">
-                                        <LogIn className="w-4 h-4" />
-                                        <span>Login</span>
-                                    </Link>
-                                    <Link to="/register" className="btn btn-primary">
-                                        <UserPlus className="w-4 h-4" />
-                                        <span>Sign Up</span>
-                                    </Link>
-                                </div>
-                            )}
-
-                            {/* Mobile Menu Toggle */}
-                            <button
-                                onClick={toggleMobileMenu}
-                                className="btn-ghost btn-icon lg:hidden"
-                            >
-                                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-                            </button>
-                        </div>
-                    </div>
-                </nav>
-            </motion.header>
-
-            {/* Mobile Menu */}
-            <AnimatePresence>
-                {mobileMenuOpen && (
-                    <>
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
-                        />
-                        <motion.div
-                            initial={{ x: '100%' }}
-                            animate={{ x: 0 }}
-                            exit={{ x: '100%' }}
-                            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                            className="fixed top-0 right-0 bottom-0 w-80 glass-strong z-50 lg:hidden"
-                        >
-                            <div className="p-6">
-                                <div className="flex items-center justify-between mb-8">
-                                    <span className="text-xl font-bold font-display text-gradient">Menu</span>
-                                    <button onClick={() => setMobileMenuOpen(false)} className="btn-ghost btn-icon">
-                                        <X className="w-5 h-5" />
-                                    </button>
-                                </div>
-
-                                <nav className="space-y-2">
-                                    {navLinks.map((link) => (
-                                        <Link
-                                            key={link.name}
-                                            to={link.href}
-                                            onClick={() => setMobileMenuOpen(false)}
-                                            className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-tertiary transition-colors"
-                                        >
-                                            <link.icon className="w-5 h-5 text-indigo-500" />
-                                            <span className="font-medium">{link.name}</span>
-                                        </Link>
-                                    ))}
-                                </nav>
-
-                                {!isAuthenticated && (
-                                    <div className="mt-8 space-y-3">
-                                        <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="btn btn-secondary w-full justify-center">
-                                            <LogIn className="w-4 h-4" />
-                                            <span>Login</span>
-                                        </Link>
-                                        <Link to="/register" onClick={() => setMobileMenuOpen(false)} className="btn btn-primary w-full justify-center">
-                                            <UserPlus className="w-4 h-4" />
-                                            <span>Sign Up</span>
-                                        </Link>
-                                    </div>
-                                )}
+                        {!isAuthenticated && (
+                            <div style={{ marginTop: 'var(--space-8)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                                <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="btn btn-secondary" style={{ justifyContent: 'center' }}>
+                                    Login
+                                </Link>
+                                <Link to="/register" onClick={() => setMobileMenuOpen(false)} className="btn btn-primary" style={{ justifyContent: 'center' }}>
+                                    Sign Up
+                                </Link>
                             </div>
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
+                        )}
+                    </div>
+                </>
+            )}
         </>
     );
 }

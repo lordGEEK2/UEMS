@@ -1,94 +1,164 @@
-import { motion } from 'framer-motion';
-import { Building2, ExternalLink, Mail, MapPin } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Building2, ExternalLink, Sparkles } from 'lucide-react';
 
-const mockSponsors = [
-    { id: 1, name: 'TechCorp India', tier: 'Platinum', logo: '🏢', website: 'https://techcorp.com' },
-    { id: 2, name: 'InnovateTech', tier: 'Gold', logo: '💡', website: 'https://innovatetech.com' },
-    { id: 3, name: 'CloudSystems', tier: 'Gold', logo: '☁️', website: 'https://cloudsystems.com' },
-    { id: 4, name: 'DataDriven', tier: 'Silver', logo: '📊', website: 'https://datadriven.com' },
-    { id: 5, name: 'CodeCraft', tier: 'Silver', logo: '💻', website: 'https://codecraft.com' },
-    { id: 6, name: 'StartupHub', tier: 'Bronze', logo: '🚀', website: 'https://startuphub.com' },
+const sponsors = [
+    {
+        id: 1,
+        name: 'Google',
+        tier: 'Platinum',
+        logo: 'G',
+        description: 'Supporting technology education and innovation.',
+        website: 'https://google.com',
+    },
+    {
+        id: 2,
+        name: 'Microsoft',
+        tier: 'Platinum',
+        logo: 'M',
+        description: 'Empowering students with cloud and AI technologies.',
+        website: 'https://microsoft.com',
+    },
+    {
+        id: 3,
+        name: 'Amazon Web Services',
+        tier: 'Gold',
+        logo: 'A',
+        description: 'Cloud computing resources for student projects.',
+        website: 'https://aws.amazon.com',
+    },
+    {
+        id: 4,
+        name: 'GitHub',
+        tier: 'Gold',
+        logo: 'GH',
+        description: 'Collaboration tools for student developers.',
+        website: 'https://github.com',
+    },
+    {
+        id: 5,
+        name: 'JetBrains',
+        tier: 'Silver',
+        logo: 'JB',
+        description: 'Professional development tools for students.',
+        website: 'https://jetbrains.com',
+    },
+    {
+        id: 6,
+        name: 'DigitalOcean',
+        tier: 'Silver',
+        logo: 'DO',
+        description: 'Cloud infrastructure for student projects.',
+        website: 'https://digitalocean.com',
+    },
 ];
 
-const tierColors = {
-    Platinum: 'from-slate-400 to-slate-600',
-    Gold: 'from-yellow-400 to-amber-600',
-    Silver: 'from-gray-300 to-gray-500',
-    Bronze: 'from-orange-400 to-orange-700',
+const tierStyles = {
+    Platinum: { bg: 'linear-gradient(135deg, #e5e4e2, #afafaf)', color: '#3d3d3d' },
+    Gold: { bg: 'linear-gradient(135deg, #ffd700, #ffb700)', color: '#5c4600' },
+    Silver: { bg: 'linear-gradient(135deg, #c0c0c0, #a0a0a0)', color: '#404040' },
 };
 
 export default function SponsorsPage() {
     return (
-        <div className="section-spacing">
+        <div className="section">
             <div className="container">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-center section-header"
-                >
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 text-amber-500 text-sm font-medium mb-6">
-                        <Building2 className="w-4 h-4" />
-                        <span>Our Partners</span>
-                    </div>
-                    <h1 className="text-4xl sm:text-5xl font-bold font-display mb-4">
-                        <span className="text-primary">Our </span>
-                        <span className="text-gradient">Sponsors</span>
-                    </h1>
-                    <p className="text-lg text-secondary max-w-2xl mx-auto">
-                        We're grateful to our sponsors who support student activities and help make events possible.
+                {/* Page Header */}
+                <div className="section-header text-center">
+                    <span className="badge badge-primary" style={{ marginBottom: 'var(--space-4)' }}>
+                        <Sparkles style={{ width: 14, height: 14, marginRight: 6 }} />
+                        Our Partners
+                    </span>
+                    <h1 className="h1">Sponsors & Partners</h1>
+                    <p className="body-lg" style={{ marginTop: 'var(--space-2)', maxWidth: 560, marginLeft: 'auto', marginRight: 'auto' }}>
+                        Organizations that support MITS student activities and events
                     </p>
-                </motion.div>
+                </div>
 
                 {/* Sponsors Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {mockSponsors.map((sponsor, i) => (
-                        <motion.a
-                            key={sponsor.id}
-                            href={sponsor.website}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: i * 0.1 }}
-                            className="glass-card group text-center hover:scale-[1.02] transition-transform"
-                        >
-                            <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 flex items-center justify-center text-4xl">
-                                {sponsor.logo}
+                <div className="grid grid-3">
+                    {sponsors.map((sponsor) => (
+                        <div key={sponsor.id} className="card">
+                            <div className="flex items-center gap-4" style={{ marginBottom: 'var(--space-4)' }}>
+                                <div
+                                    style={{
+                                        width: 56,
+                                        height: 56,
+                                        borderRadius: 'var(--radius-lg)',
+                                        background: 'var(--bg-tertiary)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontSize: 18,
+                                        fontWeight: 700,
+                                        color: 'var(--text-secondary)',
+                                    }}
+                                >
+                                    {sponsor.logo}
+                                </div>
+                                <div>
+                                    <h3 className="h4">{sponsor.name}</h3>
+                                    <span
+                                        style={{
+                                            display: 'inline-block',
+                                            padding: '2px 8px',
+                                            borderRadius: 'var(--radius-full)',
+                                            fontSize: 11,
+                                            fontWeight: 600,
+                                            background: tierStyles[sponsor.tier].bg,
+                                            color: tierStyles[sponsor.tier].color,
+                                        }}
+                                    >
+                                        {sponsor.tier}
+                                    </span>
+                                </div>
                             </div>
-                            <h3 className="text-xl font-bold font-display text-primary mb-2 group-hover:text-indigo-500 transition-colors">
-                                {sponsor.name}
-                            </h3>
-                            <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium text-white bg-gradient-to-r ${tierColors[sponsor.tier]}`}>
-                                {sponsor.tier} Partner
-                            </span>
-                            <div className="flex items-center justify-center gap-1 mt-4 text-sm text-secondary group-hover:text-indigo-500">
-                                <span>Visit Website</span>
-                                <ExternalLink className="w-3 h-3" />
-                            </div>
-                        </motion.a>
+                            <p className="body-sm" style={{ marginBottom: 'var(--space-4)' }}>
+                                {sponsor.description}
+                            </p>
+                            <a
+                                href={sponsor.website}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn btn-ghost btn-sm"
+                                style={{ marginLeft: '-8px' }}
+                            >
+                                <ExternalLink style={{ width: 14, height: 14 }} />
+                                Visit Website
+                            </a>
+                        </div>
                     ))}
                 </div>
 
-                {/* Become a Sponsor CTA */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 }}
-                    className="mt-16 text-center"
+                {/* CTA Section */}
+                <div
+                    className="card text-center"
+                    style={{
+                        marginTop: 'var(--space-16)',
+                        background: 'var(--primary-50)',
+                        borderColor: 'var(--primary-100)',
+                    }}
                 >
-                    <div className="glass-card max-w-2xl mx-auto">
-                        <h2 className="text-2xl font-bold font-display text-primary mb-4">
-                            Become a Sponsor
-                        </h2>
-                        <p className="text-secondary mb-6">
-                            Partner with us to reach 10,000+ students and support innovation at MITS Gwalior.
-                        </p>
-                        <button className="btn btn-primary">
-                            <Mail className="w-4 h-4" />
-                            <span>Contact Us</span>
-                        </button>
-                    </div>
-                </motion.div>
+                    <Building2
+                        style={{
+                            width: 48,
+                            height: 48,
+                            margin: '0 auto var(--space-4)',
+                            color: 'var(--primary-600)',
+                        }}
+                    />
+                    <h2 className="h2" style={{ marginBottom: 'var(--space-2)' }}>
+                        Become a Sponsor
+                    </h2>
+                    <p className="body" style={{ maxWidth: 480, margin: '0 auto var(--space-6)' }}>
+                        Partner with MITS to support student innovation and gain visibility among 10,000+ students.
+                    </p>
+                    <a
+                        href="mailto:sponsors@mitsgwalior.in"
+                        className="btn btn-primary btn-lg"
+                    >
+                        Get in Touch
+                    </a>
+                </div>
             </div>
         </div>
     );

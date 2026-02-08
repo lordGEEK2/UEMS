@@ -1,22 +1,18 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import { useParams, Link } from 'react-router-dom';
-import {
-    ArrowLeft, Users, Calendar, Settings, MessageCircle,
-    Mail, Phone, MapPin, ExternalLink, UserPlus, Crown, Shield
-} from 'lucide-react';
+import { ArrowLeft, Users, Calendar, MessageCircle, Settings, UserPlus, Crown, Shield } from 'lucide-react';
 import { clubs, clubCategories } from '../../data/clubs';
 
-// Mock members data
+// Mock members
 const mockMembers = [
-    { id: 1, name: 'Rahul Sharma', role: 'President', avatar: 'RS', year: '4th Year' },
-    { id: 2, name: 'Priya Singh', role: 'Vice President', avatar: 'PS', year: '4th Year' },
-    { id: 3, name: 'Amit Kumar', role: 'Secretary', avatar: 'AK', year: '3rd Year' },
-    { id: 4, name: 'Sneha Patel', role: 'Treasurer', avatar: 'SP', year: '3rd Year' },
-    { id: 5, name: 'Vikram Joshi', role: 'Tech Lead', avatar: 'VJ', year: '3rd Year' },
-    { id: 6, name: 'Ananya Gupta', role: 'Member', avatar: 'AG', year: '2nd Year' },
-    { id: 7, name: 'Rohan Verma', role: 'Member', avatar: 'RV', year: '2nd Year' },
-    { id: 8, name: 'Kavya Reddy', role: 'Member', avatar: 'KR', year: '2nd Year' },
+    { id: 1, name: 'Rahul Sharma', role: 'President', year: '4th Year' },
+    { id: 2, name: 'Priya Singh', role: 'Vice President', year: '4th Year' },
+    { id: 3, name: 'Amit Kumar', role: 'Secretary', year: '3rd Year' },
+    { id: 4, name: 'Sneha Patel', role: 'Treasurer', year: '3rd Year' },
+    { id: 5, name: 'Vikram Joshi', role: 'Tech Lead', year: '3rd Year' },
+    { id: 6, name: 'Ananya Gupta', role: 'Member', year: '2nd Year' },
+    { id: 7, name: 'Rohan Verma', role: 'Member', year: '2nd Year' },
+    { id: 8, name: 'Kavya Reddy', role: 'Member', year: '2nd Year' },
 ];
 
 const tabs = ['Overview', 'Members', 'Events', 'Chat'];
@@ -25,234 +21,256 @@ export default function ClubDetailPage() {
     const { slug } = useParams();
     const [activeTab, setActiveTab] = useState('Overview');
 
-    // Find club by slug/id
-    const club = clubs.find(c => c.id === slug) || clubs[0];
+    const club = clubs.find((c) => c.id === slug) || clubs[0];
     const category = clubCategories[club.category];
 
     const getRoleBadge = (role) => {
-        if (role === 'President') return { icon: Crown, color: 'text-yellow-500 bg-yellow-500/10' };
-        if (role === 'Vice President') return { icon: Shield, color: 'text-purple-500 bg-purple-500/10' };
-        if (role === 'Secretary' || role === 'Treasurer' || role === 'Tech Lead')
-            return { icon: Shield, color: 'text-blue-500 bg-blue-500/10' };
+        if (role === 'President') return { icon: Crown, type: 'badge-warning' };
+        if (role === 'Vice President' || role === 'Secretary' || role === 'Treasurer' || role === 'Tech Lead')
+            return { icon: Shield, type: 'badge-primary' };
         return null;
     };
 
     return (
-        <div className="section-spacing">
+        <div className="section">
             <div className="container">
-                {/* Breadcrumb */}
-                <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mb-8"
+                {/* Back Link */}
+                <Link
+                    to="/clubs"
+                    className="flex items-center gap-2 muted"
+                    style={{ marginBottom: 'var(--space-6)', textDecoration: 'none' }}
                 >
-                    <Link to="/clubs" className="inline-flex items-center gap-2 text-secondary hover:text-indigo-500 transition-colors">
-                        <ArrowLeft className="w-4 h-4" />
-                        <span>Back to Clubs</span>
-                    </Link>
-                </motion.div>
+                    <ArrowLeft style={{ width: 16, height: 16 }} />
+                    <span>Back to Clubs</span>
+                </Link>
 
                 {/* Club Header */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="glass-card mb-8"
+                <div
+                    className="card"
+                    style={{
+                        marginBottom: 'var(--space-8)',
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        alignItems: 'center',
+                        gap: 'var(--space-6)',
+                    }}
                 >
-                    <div className="flex flex-col md:flex-row gap-6">
-                        {/* Club Logo */}
-                        <div
-                            className="w-24 h-24 rounded-2xl flex items-center justify-center text-4xl shadow-lg"
-                            style={{ background: `linear-gradient(135deg, ${category?.color || '#6366f1'}20, ${category?.color || '#6366f1'}40)` }}
-                        >
-                            {category?.icon || '🎯'}
-                        </div>
-
-                        {/* Club Info */}
-                        <div className="flex-1">
-                            <div className="flex flex-wrap items-start justify-between gap-4">
-                                <div>
-                                    <h1 className="text-2xl md:text-3xl font-bold font-display text-primary mb-2">
-                                        {club.name}
-                                    </h1>
-                                    <p className="text-secondary mb-3">
-                                        Faculty Coordinator: <span className="font-medium text-primary">{club.coordinator}</span>
-                                    </p>
-                                    <span
-                                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium"
-                                        style={{
-                                            background: `${category?.color || '#6366f1'}15`,
-                                            color: category?.color || '#6366f1'
-                                        }}
-                                    >
-                                        {category?.icon} {category?.name || 'Club'}
-                                    </span>
-                                </div>
-
-                                <div className="flex gap-3">
-                                    <button className="btn btn-primary">
-                                        <UserPlus className="w-4 h-4" />
-                                        <span>Join Club</span>
-                                    </button>
-                                    <button className="btn btn-secondary">
-                                        <MessageCircle className="w-4 h-4" />
-                                        <span>Chat</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+                    <div
+                        style={{
+                            width: 72,
+                            height: 72,
+                            borderRadius: 'var(--radius-xl)',
+                            background: 'var(--bg-tertiary)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: 32,
+                        }}
+                    >
+                        {category?.icon || '🎯'}
                     </div>
-                </motion.div>
+
+                    <div style={{ flex: 1, minWidth: 200 }}>
+                        <h1 className="h2">{club.name}</h1>
+                        <p className="body" style={{ marginTop: 'var(--space-1)' }}>
+                            Faculty Coordinator: <strong>{club.coordinator}</strong>
+                        </p>
+                        <span className="badge badge-primary" style={{ marginTop: 'var(--space-2)' }}>
+                            {category?.name || 'Club'}
+                        </span>
+                    </div>
+
+                    <div className="flex gap-4">
+                        <button className="btn btn-primary">
+                            <UserPlus style={{ width: 16, height: 16 }} />
+                            Join Club
+                        </button>
+                        <button className="btn btn-secondary">
+                            <MessageCircle style={{ width: 16, height: 16 }} />
+                            Chat
+                        </button>
+                    </div>
+                </div>
 
                 {/* Tabs */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="flex gap-2 mb-8 overflow-x-auto pb-2"
+                <div
+                    style={{
+                        display: 'flex',
+                        gap: 'var(--space-2)',
+                        marginBottom: 'var(--space-8)',
+                        borderBottom: '1px solid var(--border)',
+                        paddingBottom: 'var(--space-4)',
+                    }}
                 >
                     {tabs.map((tab) => (
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab)}
-                            className={`
-                px-6 py-3 rounded-xl text-sm font-medium whitespace-nowrap transition-all
-                ${activeTab === tab
-                                    ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/25'
-                                    : 'bg-secondary text-secondary hover:bg-tertiary'}
-              `}
+                            className={`btn ${activeTab === tab ? 'btn-primary' : 'btn-ghost'}`}
                         >
                             {tab}
                         </button>
                     ))}
-                </motion.div>
+                </div>
 
                 {/* Tab Content */}
                 {activeTab === 'Overview' && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: '2fr 1fr',
+                            gap: 'var(--space-8)',
+                        }}
                     >
-                        {/* About */}
-                        <div className="lg:col-span-2 glass-card">
-                            <h2 className="text-xl font-bold font-display text-primary mb-4">About</h2>
-                            <p className="text-secondary leading-relaxed">
+                        <div className="card">
+                            <h2 className="h3" style={{ marginBottom: 'var(--space-4)' }}>
+                                About
+                            </h2>
+                            <p className="body">
                                 {club.name} is one of the most active student organizations at MITS Gwalior.
                                 We are dedicated to fostering innovation, learning, and collaboration among students
                                 interested in {category?.name?.toLowerCase() || 'various activities'}.
                             </p>
-                            <p className="text-secondary leading-relaxed mt-4">
+                            <p className="body" style={{ marginTop: 'var(--space-4)' }}>
                                 Our club organizes regular workshops, competitions, and networking events to help
                                 students develop their skills and connect with industry professionals.
                             </p>
                         </div>
 
-                        {/* Quick Stats */}
-                        <div className="glass-card">
-                            <h2 className="text-xl font-bold font-display text-primary mb-4">Quick Stats</h2>
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center">
-                                        <Users className="w-5 h-5 text-indigo-500" />
+                        <div className="card">
+                            <h2 className="h3" style={{ marginBottom: 'var(--space-4)' }}>
+                                Quick Stats
+                            </h2>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                                <div className="flex items-center gap-4">
+                                    <div
+                                        style={{
+                                            width: 40,
+                                            height: 40,
+                                            borderRadius: 'var(--radius-md)',
+                                            background: 'var(--primary-50)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                        }}
+                                    >
+                                        <Users style={{ width: 18, height: 18, color: 'var(--primary-600)' }} />
                                     </div>
                                     <div>
-                                        <p className="font-semibold text-primary">120+ Members</p>
-                                        <p className="text-xs text-secondary">Active members</p>
+                                        <p style={{ fontWeight: 600 }}>120+ Members</p>
+                                        <p className="muted" style={{ fontSize: 13 }}>Active members</p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
-                                        <Calendar className="w-5 h-5 text-purple-500" />
+                                <div className="flex items-center gap-4">
+                                    <div
+                                        style={{
+                                            width: 40,
+                                            height: 40,
+                                            borderRadius: 'var(--radius-md)',
+                                            background: 'var(--primary-50)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                        }}
+                                    >
+                                        <Calendar style={{ width: 18, height: 18, color: 'var(--primary-600)' }} />
                                     </div>
                                     <div>
-                                        <p className="font-semibold text-primary">15+ Events</p>
-                                        <p className="text-xs text-secondary">This year</p>
+                                        <p style={{ fontWeight: 600 }}>15+ Events</p>
+                                        <p className="muted" style={{ fontSize: 13 }}>This year</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </motion.div>
+                    </div>
                 )}
 
                 {activeTab === 'Members' && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                    >
+                    <div>
                         {/* Core Team */}
-                        <div className="mb-8">
-                            <h2 className="text-xl font-bold font-display text-primary mb-6">Core Team</h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                                {mockMembers.filter(m => m.role !== 'Member').map((member) => {
-                                    const badge = getRoleBadge(member.role);
-                                    return (
-                                        <div key={member.id} className="glass-card text-center">
-                                            <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
-                                                <span className="text-white font-bold text-lg">{member.avatar}</span>
-                                            </div>
-                                            <h3 className="font-semibold text-primary">{member.name}</h3>
-                                            <div className="flex items-center justify-center gap-1 mt-1">
-                                                {badge && <badge.icon className={`w-3 h-3 ${badge.color.split(' ')[0]}`} />}
-                                                <span className="text-sm text-secondary">{member.role}</span>
-                                            </div>
-                                            <p className="text-xs text-tertiary mt-1">{member.year}</p>
+                        <h2 className="h3" style={{ marginBottom: 'var(--space-6)' }}>Core Team</h2>
+                        <div className="grid grid-4" style={{ marginBottom: 'var(--space-8)' }}>
+                            {mockMembers.filter((m) => m.role !== 'Member').map((member) => {
+                                const badge = getRoleBadge(member.role);
+                                return (
+                                    <div key={member.id} className="card text-center">
+                                        <div
+                                            className="avatar avatar-lg"
+                                            style={{ margin: '0 auto var(--space-3)' }}
+                                        >
+                                            {member.name.split(' ').map((n) => n[0]).join('')}
                                         </div>
-                                    );
-                                })}
-                            </div>
+                                        <h4 className="h4">{member.name}</h4>
+                                        <div className="flex items-center justify-center gap-2 mt-2">
+                                            {badge && <badge.icon style={{ width: 12, height: 12, color: 'var(--primary-600)' }} />}
+                                            <span className="muted" style={{ fontSize: 13 }}>{member.role}</span>
+                                        </div>
+                                        <p className="muted" style={{ fontSize: 12 }}>{member.year}</p>
+                                    </div>
+                                );
+                            })}
                         </div>
 
-                        {/* All Members */}
-                        <div>
-                            <h2 className="text-xl font-bold font-display text-primary mb-6">All Members</h2>
-                            <div className="glass-card">
-                                <div className="divide-y divide-primary/10">
+                        {/* All Members Table */}
+                        <h2 className="h3" style={{ marginBottom: 'var(--space-6)' }}>All Members</h2>
+                        <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+                            <table className="table">
+                                <thead>
+                                    <tr>
+                                        <th>Member</th>
+                                        <th>Role</th>
+                                        <th>Year</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
                                     {mockMembers.map((member) => (
-                                        <div key={member.id} className="flex items-center gap-4 py-4 first:pt-0 last:pb-0">
-                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
-                                                <span className="text-white font-medium text-sm">{member.avatar}</span>
-                                            </div>
-                                            <div className="flex-1">
-                                                <p className="font-medium text-primary">{member.name}</p>
-                                                <p className="text-xs text-secondary">{member.year}</p>
-                                            </div>
-                                            <span className="text-sm text-secondary">{member.role}</span>
-                                        </div>
+                                        <tr key={member.id}>
+                                            <td>
+                                                <div className="flex items-center gap-4">
+                                                    <div className="avatar avatar-sm">
+                                                        {member.name.split(' ').map((n) => n[0]).join('')}
+                                                    </div>
+                                                    <span>{member.name}</span>
+                                                </div>
+                                            </td>
+                                            <td>{member.role}</td>
+                                            <td>{member.year}</td>
+                                        </tr>
                                     ))}
-                                </div>
-                            </div>
+                                </tbody>
+                            </table>
                         </div>
-                    </motion.div>
+                    </div>
                 )}
 
                 {activeTab === 'Events' && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-center py-12"
-                    >
-                        <Calendar className="w-16 h-16 mx-auto text-secondary mb-4" />
-                        <h3 className="text-xl font-semibold text-primary mb-2">No upcoming events</h3>
-                        <p className="text-secondary">Check back later for new events from {club.name}</p>
-                    </motion.div>
+                    <div className="empty-state">
+                        <Calendar className="empty-state-icon" />
+                        <h3 className="empty-state-title">No upcoming events</h3>
+                        <p className="empty-state-text">Check back later for new events from {club.name}</p>
+                    </div>
                 )}
 
                 {activeTab === 'Chat' && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-center py-12"
-                    >
-                        <MessageCircle className="w-16 h-16 mx-auto text-secondary mb-4" />
-                        <h3 className="text-xl font-semibold text-primary mb-2">Club Chat</h3>
-                        <p className="text-secondary mb-6">Join the club to access the chat feature</p>
-                        <button className="btn btn-primary">
-                            <UserPlus className="w-4 h-4" />
-                            <span>Join Club to Chat</span>
+                    <div className="empty-state">
+                        <MessageCircle className="empty-state-icon" />
+                        <h3 className="empty-state-title">Club Chat</h3>
+                        <p className="empty-state-text">Join the club to access the chat feature</p>
+                        <button className="btn btn-primary mt-6">
+                            <UserPlus style={{ width: 16, height: 16 }} />
+                            Join Club to Chat
                         </button>
-                    </motion.div>
+                    </div>
                 )}
             </div>
+
+            <style>{`
+        @media (max-width: 768px) {
+          .container > div[style*="grid-template-columns: 2fr 1fr"] {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
         </div>
     );
 }

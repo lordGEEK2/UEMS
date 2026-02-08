@@ -4,9 +4,9 @@ import Footer from '../components/common/Footer';
 
 export default function MainLayout() {
     return (
-        <div className="min-h-screen bg-primary flex flex-col">
+        <div className="page-wrapper">
             <Navbar />
-            <main className="flex-1">
+            <main className="page-content">
                 <Outlet />
             </main>
             <Footer />
