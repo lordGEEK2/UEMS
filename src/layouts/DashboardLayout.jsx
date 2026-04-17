@@ -1,17 +1,20 @@
+import { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
-    Home, Calendar, Users, MessageCircle, Settings, LogOut, Bell,
-    Menu, X, Sun, Moon, ChevronDown, Plus, Search
+    Home, Calendar, Users, MessageCircle, Settings, LogOut,
+    Menu, Sun, Moon, ChevronLeft, ChevronRight, Code2, User
 } from 'lucide-react';
 import { useThemeStore, useAuthStore, useUIStore } from '../hooks/useStore';
+import mitsLogo from '../assets/mits-logo.png';
 
 const sidebarLinks = [
     { name: 'Dashboard', href: '/dashboard', icon: Home },
-    { name: 'Events', href: '/dashboard/events', icon: Calendar },
-    { name: 'Clubs', href: '/dashboard/clubs', icon: Users },
+    { name: 'My Team', href: '/dashboard/clubs', icon: Users },
+    { name: 'My Projects', href: '/dashboard/events', icon: Calendar },
     { name: 'Chat', href: '/dashboard/chat', icon: MessageCircle },
-    { name: 'Settings', href: '/dashboard/settings', icon: Settings },
+    { name: 'Create Team', href: '/dashboard/create', icon: Users },
+    { name: 'Join Team', href: '/dashboard/join', icon: Users },
 ];
 
 export default function DashboardLayout() {
@@ -19,7 +22,8 @@ export default function DashboardLayout() {
     const navigate = useNavigate();
     const { theme, toggleTheme } = useThemeStore();
     const { user, role, logout } = useAuthStore();
-    const { sidebarOpen, toggleSidebar, setSidebarOpen } = useUIStore();
+    const { sidebarOpen, setSidebarOpen } = useUIStore();
+    const [collapsed, setCollapsed] = useState(false);
 
     const handleLogout = () => {
         logout();
@@ -39,19 +43,40 @@ export default function DashboardLayout() {
     };
 
     return (
-        <div className="dashboard-layout">
-            {/* Sidebar */}
-            <aside className={`dashboard-sidebar ${sidebarOpen ? 'open' : ''}`}>
+        <div className={`dashboard-sdms ${collapsed ? 'sidebar-collapsed' : ''}`}>
+            {/* SDMS-style Sidebar */}
+            <aside className={`sidebar-sdms ${sidebarOpen ? 'open' : ''} ${collapsed ? 'collapsed' : ''}`}>
+                {/* Collapse Toggle */}
+                <button
+                    className="sidebar-toggle hide-mobile"
+                    onClick={() => setCollapsed(!collapsed)}
+                >
+                    {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+                </button>
+
                 {/* Logo */}
-                <Link to="/" className="flex items-center gap-3 mb-10">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
-                        <span className="text-white font-bold text-lg font-display">U</span>
-                    </div>
-                    <span className="text-xl font-bold font-display text-gradient">UEMS</span>
+                <Link to="/" className="sidebar-logo">
+                    <img
+                        src={mitsLogo}
+                        alt="MITS Gwalior"
+                        style={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: '50%',
+                            objectFit: 'contain',
+                            flexShrink: 0,
+                        }}
+                    />
+                    {!collapsed && (
+                        <div className="sidebar-logo-text">
+                            <span className="sidebar-logo-title">UEMS</span>
+                            <span className="sidebar-logo-subtitle">MITS Gwalior</span>
+                        </div>
+                    )}
                 </Link>
 
                 {/* Navigation */}
-                <nav className="flex-1 space-y-2">
+                <nav className="sidebar-nav">
                     {sidebarLinks.map((link) => {
                         const isActive = location.pathname === link.href;
                         return (
@@ -59,48 +84,43 @@ export default function DashboardLayout() {
                                 key={link.name}
                                 to={link.href}
                                 onClick={() => setSidebarOpen(false)}
-                                className={`
-                  flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
-                  ${isActive
-                                        ? 'bg-indigo-500/10 text-indigo-500 font-medium'
-                                        : 'text-secondary hover:bg-tertiary hover:text-primary'}
-                `}
+                                className={`sidebar-link ${isActive ? 'active' : ''}`}
+                                title={collapsed ? link.name : ''}
                             >
-                                <link.icon className="w-5 h-5" />
-                                <span>{link.name}</span>
-                                {link.name === 'Chat' && (
-                                    <span className="ml-auto w-5 h-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">
-                                        3
-                                    </span>
-                                )}
+                                <link.icon style={{ width: 20, height: 20, flexShrink: 0 }} />
+                                {!collapsed && <span>{link.name}</span>}
                             </Link>
                         );
                     })}
                 </nav>
 
-                {/* User Card */}
-                <div className="mt-auto pt-6 border-t border-primary/10">
-                    <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
-                            <span className="text-white font-semibold">
-                                {user?.profile?.firstName?.[0] || 'U'}
-                            </span>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="font-medium text-primary truncate">
-                                {user?.profile?.firstName || 'User'} {user?.profile?.lastName || ''}
-                            </p>
-                            <p className="text-xs text-secondary">{getRoleLabel()}</p>
-                        </div>
+                {/* Footer */}
+                <div className="sidebar-footer">
+                    {/* Theme Toggle */}
+                    <div className="theme-toggle" onClick={toggleTheme}>
+                        {theme === 'dark' ? <Moon size={18} /> : <Sun size={18} />}
+                        {!collapsed && <span>Dark Mode</span>}
                     </div>
 
-                    <button
-                        onClick={handleLogout}
-                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-500/10 transition-colors"
-                    >
-                        <LogOut className="w-5 h-5" />
-                        <span>Logout</span>
-                    </button>
+                    {/* User Card */}
+                    <div className="user-card">
+                        <div className="user-avatar">
+                            {user?.profile?.firstName?.[0] || 'U'}
+                        </div>
+                        {!collapsed && (
+                            <>
+                                <div className="user-info">
+                                    <div className="user-name">
+                                        {user?.profile?.firstName || 'User'} {user?.profile?.lastName || ''}
+                                    </div>
+                                    <div className="user-role">{getRoleLabel()}</div>
+                                </div>
+                                <button className="logout-btn" onClick={handleLogout} title="Logout">
+                                    <LogOut size={18} />
+                                </button>
+                            </>
+                        )}
+                    </div>
                 </div>
             </aside>
 
@@ -112,57 +132,62 @@ export default function DashboardLayout() {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={() => setSidebarOpen(false)}
-                        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+                        style={{
+                            position: 'fixed',
+                            inset: 0,
+                            background: 'rgba(0,0,0,0.5)',
+                            zIndex: 150,
+                        }}
+                        className="hide-desktop"
                     />
                 )}
             </AnimatePresence>
 
-            {/* Header */}
-            <header className="dashboard-header">
-                <div className="flex items-center gap-4">
+            {/* Main Content Area */}
+            <div className="main-content">
+                {/* Top Header */}
+                <header className="top-header">
+                    {/* Mobile Menu Toggle */}
                     <button
-                        onClick={toggleSidebar}
-                        className="btn-ghost btn-icon lg:hidden"
+                        onClick={() => setSidebarOpen(!sidebarOpen)}
+                        className="btn btn-ghost btn-icon hide-desktop"
+                        style={{ marginRight: 'auto' }}
                     >
-                        <Menu className="w-5 h-5" />
+                        <Menu size={20} />
                     </button>
 
-                    {/* Search */}
-                    <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-secondary">
-                        <Search className="w-4 h-4 text-tertiary" />
-                        <input
-                            type="text"
-                            placeholder="Search..."
-                            className="bg-transparent border-none outline-none text-sm w-48"
-                        />
-                        <kbd className="hidden md:inline-flex px-2 py-0.5 rounded bg-tertiary text-xs text-secondary">⌘K</kbd>
-                    </div>
-                </div>
+                    {/* Home Link */}
+                    <Link to="/" className="header-link">
+                        <Home size={18} />
+                    </Link>
 
-                <div className="flex items-center gap-2">
-                    {/* Quick Actions */}
-                    <button className="btn btn-primary hidden sm:inline-flex">
-                        <Plus className="w-4 h-4" />
-                        <span>Create Event</span>
-                    </button>
-
-                    {/* Notifications */}
-                    <button className="btn-ghost btn-icon relative">
-                        <Bell className="w-5 h-5" />
-                        <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full" />
-                    </button>
+                    {/* Developers Link */}
+                    <Link to="/developers" className="header-link">
+                        <Code2 size={16} />
+                        <span className="hide-mobile">Developers</span>
+                    </Link>
 
                     {/* Theme Toggle */}
-                    <button onClick={toggleTheme} className="btn-ghost btn-icon">
-                        {theme === 'light' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                    <button onClick={toggleTheme} className="btn btn-ghost btn-icon-sm">
+                        {theme === 'light' ? <Sun size={18} /> : <Moon size={18} />}
                     </button>
-                </div>
-            </header>
 
-            {/* Main Content */}
-            <main className="dashboard-main">
-                <Outlet />
-            </main>
+                    {/* User */}
+                    <div className="header-user">
+                        <div className="avatar avatar-sm">
+                            {user?.profile?.firstName?.[0] || 'U'}
+                        </div>
+                        <span className="hide-mobile" style={{ fontWeight: 500, fontSize: '0.875rem' }}>
+                            {user?.profile?.firstName || 'User'} {user?.profile?.lastName || ''}
+                        </span>
+                    </div>
+                </header>
+
+                {/* Page Content */}
+                <main style={{ padding: 'var(--space-6)' }}>
+                    <Outlet />
+                </main>
+            </div>
         </div>
     );
 }

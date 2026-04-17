@@ -15,6 +15,7 @@ import ClubsPage from './pages/Clubs/ClubsPage';
 import ClubDetailPage from './pages/Clubs/ClubDetailPage';
 import RecruitmentsPage from './pages/Recruitments/RecruitmentsPage';
 import SponsorsPage from './pages/Sponsors/SponsorsPage';
+import DevelopersPage from './pages/Developers/DevelopersPage';
 
 // Auth Pages
 import LoginPage from './pages/Auth/LoginPage';
@@ -25,6 +26,13 @@ import ForgotPasswordPage from './pages/Auth/ForgotPasswordPage';
 import StudentDashboard from './pages/Dashboard/StudentDashboard';
 import ClubAdminDashboard from './pages/Dashboard/ClubAdminDashboard';
 import AdminDashboard from './pages/Dashboard/AdminDashboard';
+import ChatPage from './pages/Chat/ChatPage';
+import ProfilePage from './pages/Profile/ProfilePage';
+import EventCreatePage from './pages/Events/EventCreatePage';
+import PaymentPage from './pages/Payment/PaymentPage';
+
+// UI Components
+import { ToastContainer } from './components/ui/Toast';
 
 // Styles
 import './styles/globals.css';
@@ -72,6 +80,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <ToastContainer />
       <Routes>
         {/* Public Routes with Main Layout */}
         <Route element={<MainLayout />}>
@@ -82,6 +91,7 @@ function App() {
           <Route path="/clubs/:slug" element={<ClubDetailPage />} />
           <Route path="/recruitments" element={<RecruitmentsPage />} />
           <Route path="/sponsors" element={<SponsorsPage />} />
+          <Route path="/developers" element={<DevelopersPage />} />
         </Route>
 
         {/* Auth Routes */}
@@ -99,9 +109,12 @@ function App() {
         }>
           <Route path="/dashboard" element={<DashboardRouter />} />
           <Route path="/dashboard/events" element={<DashboardRouter />} />
+          <Route path="/dashboard/events/create" element={<EventCreatePage />} />
           <Route path="/dashboard/clubs" element={<DashboardRouter />} />
-          <Route path="/dashboard/chat" element={<DashboardRouter />} />
-          <Route path="/dashboard/settings" element={<DashboardRouter />} />
+          <Route path="/dashboard/chat" element={<ChatPage />} />
+          <Route path="/dashboard/payments" element={<PaymentPage />} />
+          <Route path="/dashboard/profile" element={<ProfilePage />} />
+          <Route path="/dashboard/settings" element={<ProfilePage />} />
         </Route>
 
         {/* 404 Fallback */}

@@ -1,4 +1,5 @@
 import { Outlet, Link } from 'react-router-dom';
+import mitsLogo from '../assets/mits-logo.png';
 
 export default function AuthLayout() {
     return (
@@ -17,31 +18,28 @@ export default function AuthLayout() {
                 className="hide-mobile"
             >
                 <Link to="/" style={{ marginBottom: 'var(--space-8)', textDecoration: 'none' }}>
-                    <div
+                    <img
+                        src={mitsLogo}
+                        alt="MITS Gwalior"
                         style={{
-                            width: 64,
-                            height: 64,
+                            width: 80,
+                            height: 80,
                             borderRadius: 'var(--radius-xl)',
-                            background: 'var(--primary-600)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
+                            objectFit: 'contain',
                         }}
-                    >
-                        <span style={{ color: 'white', fontWeight: 700, fontSize: 28 }}>U</span>
-                    </div>
+                    />
                 </Link>
 
                 <h1
                     className="h1"
                     style={{ textAlign: 'center', marginBottom: 'var(--space-4)' }}
                 >
-                    Welcome to UEMS
+                    Welcome to <span style={{ color: 'var(--primary-600)' }}>UEMS</span>
                 </h1>
 
                 <p
                     className="body-lg text-center"
-                    style={{ maxWidth: 400 }}
+                    style={{ maxWidth: 400, color: 'var(--text-secondary)' }}
                 >
                     University Event Management System - Your gateway to campus life at MITS Gwalior
                 </p>
@@ -83,26 +81,23 @@ export default function AuthLayout() {
                     background: 'var(--bg-primary)',
                 }}
             >
-                <div style={{ width: '100%', maxWidth: 400 }}>
+                <div style={{ width: '100%', maxWidth: 440 }}>
                     {/* Mobile Logo */}
                     <Link
                         to="/"
                         className="hide-desktop flex items-center justify-center gap-3"
                         style={{ marginBottom: 'var(--space-8)', textDecoration: 'none' }}
                     >
-                        <div
+                        <img
+                            src={mitsLogo}
+                            alt="MITS Gwalior"
                             style={{
                                 width: 48,
                                 height: 48,
                                 borderRadius: 'var(--radius-lg)',
-                                background: 'var(--primary-600)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
+                                objectFit: 'contain',
                             }}
-                        >
-                            <span style={{ color: 'white', fontWeight: 700, fontSize: 20 }}>U</span>
-                        </div>
+                        />
                         <span style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)' }}>
                             UEMS
                         </span>

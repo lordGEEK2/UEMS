@@ -1,7 +1,11 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { Search } from 'lucide-react';
-import { clubs, clubCategories, getClubsByCategory } from '../../data/clubs';
+import { useQuery } from '@tanstack/react-query';
+import { clubCategories } from '../../data/clubs';
+import { clubService } from '../../services/clubService';
+import ClubCard, { ClubCardSkeleton } from '../../components/clubs/ClubCard';
 
 const categories = [
     { id: 'all', name: 'All Clubs' },
@@ -12,43 +16,39 @@ export default function ClubsPage() {
     const [activeCategory, setActiveCategory] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
 
-    const filteredClubs = useMemo(() => {
-        let result = clubs;
+    const { data, isLoading, error } = useQuery({
+        queryKey: ['clubs', activeCategory, searchQuery],
+        queryFn: () => clubService.getAllClubs({
+            category: activeCategory !== 'all' ? activeCategory : undefined,
+            search: searchQuery
+        }),
+    });
 
-        if (activeCategory !== 'all') {
-            result = result.filter((club) => club.category === activeCategory);
-        }
-
-        if (searchQuery.trim()) {
-            const query = searchQuery.toLowerCase();
-            result = result.filter(
-                (club) =>
-                    club.name.toLowerCase().includes(query) ||
-                    club.coordinator.toLowerCase().includes(query)
-            );
-        }
-
-        return result;
-    }, [activeCategory, searchQuery]);
-
-    const getCategoryCount = (id) => {
-        if (id === 'all') return clubs.length;
-        return getClubsByCategory(id).length;
-    };
+    const clubsList = data?.clubs || [];
 
     return (
         <div className="section">
             <div className="container">
                 {/* Page Header */}
-                <div className="section-header">
+                <motion.div
+                    className="section-header"
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4 }}
+                >
                     <h1 className="h1">Student Clubs</h1>
-                    <p className="body-lg" style={{ marginTop: 'var(--space-2)', maxWidth: 560 }}>
-                        Explore 70+ student-run clubs across technology, cultural, sports, and professional domains.
+                    <p className="body-lg" style={{ marginTop: 'var(--space-2)', maxWidth: 560, color: 'var(--text-secondary)' }}>
+                        Explore student-run clubs across technology, cultural, sports, and professional domains.
                     </p>
-                </div>
+                </motion.div>
 
                 {/* Search */}
-                <div style={{ maxWidth: 480, marginBottom: 'var(--space-6)' }}>
+                <motion.div
+                    style={{ maxWidth: 480, marginBottom: 'var(--space-6)' }}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                >
                     <div style={{ position: 'relative' }}>
                         <Search
                             style={{
@@ -70,70 +70,73 @@ export default function ClubsPage() {
                             style={{ paddingLeft: 40 }}
                         />
                     </div>
-                </div>
+                </motion.div>
 
                 {/* Category Tabs */}
-                <div
+                <motion.div
                     style={{
                         display: 'flex',
                         gap: 'var(--space-2)',
                         flexWrap: 'wrap',
                         marginBottom: 'var(--space-8)',
                     }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.2 }}
                 >
-                    {categories.map((cat) => (
-                        <button
+                    {categories.map((cat, index) => (
+                        <motion.button
                             key={cat.id}
                             onClick={() => setActiveCategory(cat.id)}
                             className={`btn ${activeCategory === cat.id ? 'btn-primary' : 'btn-secondary'}`}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.98 }}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 + index * 0.05 }}
                         >
                             {cat.icon && <span style={{ marginRight: 4 }}>{cat.icon}</span>}
                             {cat.name}
-                            <span className="muted" style={{ marginLeft: 4 }}>({getCategoryCount(cat.id)})</span>
-                        </button>
+                        </motion.button>
                     ))}
-                </div>
+                </motion.div>
+
+                {/* Loading State */}
+                {isLoading && (
+                    <div className="grid grid-4">
+                        {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+                            <ClubCardSkeleton key={n} />
+                        ))}
+                    </div>
+                )}
+                
+                {/* Error State */}
+                {error && (
+                    <div className="empty-state text-red-500">
+                        Failed to load clubs. Please try again.
+                    </div>
+                )}
 
                 {/* Clubs Grid */}
-                <div className="grid grid-4">
-                    {filteredClubs.map((club) => (
-                        <Link key={club.id} to={`/clubs/${club.id}`} className="card card-interactive">
-                            <div className="flex items-center gap-4" style={{ marginBottom: 'var(--space-3)' }}>
-                                <div
-                                    style={{
-                                        width: 48,
-                                        height: 48,
-                                        borderRadius: 'var(--radius-lg)',
-                                        background: 'var(--bg-tertiary)',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        fontSize: 18,
-                                        fontWeight: 600,
-                                        color: 'var(--primary-600)',
-                                    }}
-                                >
-                                    {club.name[0]}
-                                </div>
-                                <div style={{ flex: 1, minWidth: 0 }}>
-                                    <h3 className="h4 line-clamp-1">{club.name}</h3>
-                                    <p className="muted" style={{ fontSize: 13 }}>
-                                        {clubCategories[club.category]?.name || 'Club'}
-                                    </p>
-                                </div>
-                            </div>
-                            <p className="body-sm line-clamp-1">{club.coordinator}</p>
-                        </Link>
-                    ))}
-                </div>
+                {!isLoading && !error && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {clubsList.map((club, index) => (
+                            <ClubCard key={club._id} club={club} index={index} />
+                        ))}
+                    </div>
+                )}
 
                 {/* Empty State */}
-                {filteredClubs.length === 0 && (
-                    <div className="empty-state">
+                {!isLoading && !error && clubsList.length === 0 && (
+                    <motion.div
+                        className="empty-state"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                    >
                         <Search className="empty-state-icon" />
                         <h3 className="empty-state-title">No clubs found</h3>
                         <p className="empty-state-text">Try adjusting your search or filter criteria</p>
-                    </div>
+                    </motion.div>
                 )}
             </div>
         </div>

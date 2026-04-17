@@ -27,13 +27,25 @@ export const useThemeStore = create(
 );
 
 // Auth Store - User authentication state
+// Demo user for development
+const DEMO_USER = {
+    id: 'demo-user-001',
+    email: 'demo@mits.ac.in',
+    role: 'student',
+    profile: {
+        firstName: 'Demo',
+        lastName: 'User',
+        avatar: null,
+    },
+};
+
 export const useAuthStore = create(
     persist(
-        (set) => ({
-            user: null,
-            isAuthenticated: false,
-            token: null,
-            role: null,
+        (set, get) => ({
+            user: DEMO_USER,
+            isAuthenticated: true,
+            token: 'demo-token-for-development',
+            role: 'student',
 
             login: (user, token) => set({
                 user,
@@ -47,6 +59,14 @@ export const useAuthStore = create(
                 token: null,
                 isAuthenticated: false,
                 role: null,
+            }),
+
+            // Demo login - for development/testing
+            demoLogin: (role = 'student') => set({
+                user: { ...DEMO_USER, role },
+                token: 'demo-token-for-development',
+                isAuthenticated: true,
+                role,
             }),
 
             updateUser: (userData) => set((state) => ({

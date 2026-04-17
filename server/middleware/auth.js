@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 // Protect routes - verify JWT token
-exports.protect = async (req, res, next) => {
+const protect = async (req, res, next) => {
     let token;
 
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
@@ -26,6 +26,9 @@ exports.protect = async (req, res, next) => {
         return res.status(401).json({ message: 'Token is invalid or expired' });
     }
 };
+
+exports.protect = protect;
+exports.auth = protect; // Alias for protect
 
 // Role-based access control
 exports.authorize = (...roles) => {

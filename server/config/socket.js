@@ -25,12 +25,9 @@ module.exports = (io) => {
         });
 
         // Send message
-        socket.on('send_message', (data) => {
+        socket.on('sendMessage', (data) => {
             // Broadcast to all users in the room
-            io.to(data.roomId).emit('new_message', {
-                ...data,
-                createdAt: new Date().toISOString(),
-            });
+            io.to(data.roomId).emit('newMessage', data.message);
         });
 
         // Typing indicator

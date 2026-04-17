@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { Building2, ExternalLink, Sparkles } from 'lucide-react';
 
 const sponsors = [
@@ -58,12 +58,32 @@ const tierStyles = {
     Silver: { bg: 'linear-gradient(135deg, #c0c0c0, #a0a0a0)', color: '#404040' },
 };
 
+const cardVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: (i) => ({
+        opacity: 1,
+        y: 0,
+        transition: { delay: i * 0.08, duration: 0.4, ease: 'easeOut' }
+    }),
+    hover: {
+        y: -10,
+        scale: 1.03,
+        boxShadow: '0 25px 50px rgba(0,0,0,0.12)',
+        transition: { type: 'spring', stiffness: 300, damping: 20 }
+    }
+};
+
 export default function SponsorsPage() {
     return (
         <div className="section">
             <div className="container">
                 {/* Page Header */}
-                <div className="section-header text-center">
+                <motion.div
+                    className="section-header text-center"
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                >
                     <span className="badge badge-primary" style={{ marginBottom: 'var(--space-4)' }}>
                         <Sparkles style={{ width: 14, height: 14, marginRight: 6 }} />
                         Our Partners
@@ -72,14 +92,24 @@ export default function SponsorsPage() {
                     <p className="body-lg" style={{ marginTop: 'var(--space-2)', maxWidth: 560, marginLeft: 'auto', marginRight: 'auto' }}>
                         Organizations that support MITS student activities and events
                     </p>
-                </div>
+                </motion.div>
 
                 {/* Sponsors Grid */}
                 <div className="grid grid-3">
-                    {sponsors.map((sponsor) => (
-                        <div key={sponsor.id} className="card">
+                    {sponsors.map((sponsor, index) => (
+                        <motion.div
+                            key={sponsor.id}
+                            className="card"
+                            custom={index}
+                            variants={cardVariants}
+                            initial="hidden"
+                            animate="visible"
+                            whileHover="hover"
+                        >
                             <div className="flex items-center gap-4" style={{ marginBottom: 'var(--space-4)' }}>
-                                <div
+                                <motion.div
+                                    whileHover={{ rotate: 360 }}
+                                    transition={{ duration: 0.5 }}
                                     style={{
                                         width: 56,
                                         height: 56,
@@ -94,7 +124,7 @@ export default function SponsorsPage() {
                                     }}
                                 >
                                     {sponsor.logo}
-                                </div>
+                                </motion.div>
                                 <div>
                                     <h3 className="h4">{sponsor.name}</h3>
                                     <span
@@ -112,31 +142,37 @@ export default function SponsorsPage() {
                                     </span>
                                 </div>
                             </div>
-                            <p className="body-sm" style={{ marginBottom: 'var(--space-4)' }}>
+                            <p className="body-sm" style={{ marginBottom: 'var(--space-4)', color: 'var(--text-secondary)' }}>
                                 {sponsor.description}
                             </p>
-                            <a
+                            <motion.a
                                 href={sponsor.website}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="btn btn-ghost btn-sm"
                                 style={{ marginLeft: '-8px' }}
+                                whileHover={{ x: 4 }}
+                                transition={{ type: 'spring', stiffness: 400 }}
                             >
                                 <ExternalLink style={{ width: 14, height: 14 }} />
                                 Visit Website
-                            </a>
-                        </div>
+                            </motion.a>
+                        </motion.div>
                     ))}
                 </div>
 
                 {/* CTA Section */}
-                <div
+                <motion.div
                     className="card text-center"
                     style={{
                         marginTop: 'var(--space-16)',
                         background: 'var(--primary-50)',
                         borderColor: 'var(--primary-100)',
                     }}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5, duration: 0.5 }}
+                    whileHover={{ scale: 1.01 }}
                 >
                     <Building2
                         style={{
@@ -149,16 +185,18 @@ export default function SponsorsPage() {
                     <h2 className="h2" style={{ marginBottom: 'var(--space-2)' }}>
                         Become a Sponsor
                     </h2>
-                    <p className="body" style={{ maxWidth: 480, margin: '0 auto var(--space-6)' }}>
+                    <p className="body" style={{ maxWidth: 480, margin: '0 auto var(--space-6)', color: 'var(--text-secondary)' }}>
                         Partner with MITS to support student innovation and gain visibility among 10,000+ students.
                     </p>
-                    <a
+                    <motion.a
                         href="mailto:sponsors@mitsgwalior.in"
                         className="btn btn-primary btn-lg"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.98 }}
                     >
                         Get in Touch
-                    </a>
-                </div>
+                    </motion.a>
+                </motion.div>
             </div>
         </div>
     );

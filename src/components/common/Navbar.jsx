@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Search, Menu, X, Sun, Moon, Bell, User, Calendar, Users, Trophy, Sparkles, ChevronDown, LogIn, UserPlus } from 'lucide-react';
+import { Menu, X, Sun, Moon, Bell, User, Calendar, Users, Code2, Home, LogOut } from 'lucide-react';
 import { useThemeStore, useUIStore, useAuthStore } from '../../hooks/useStore';
+import mitsLogo from '../../assets/mits-logo.png';
 
 const navLinks = [
+    { name: 'Home', href: '/', icon: Home },
     { name: 'Events', href: '/events', icon: Calendar },
     { name: 'Clubs', href: '/clubs', icon: Users },
-    { name: 'Recruitments', href: '/recruitments', icon: Trophy },
-    { name: 'Sponsors', href: '/sponsors', icon: Sparkles },
+    { name: 'Developers', href: '/developers', icon: Code2 },
 ];
 
 export default function Navbar() {
@@ -34,30 +35,32 @@ export default function Navbar() {
         }
     }, [dropdownOpen]);
 
+    const isActive = (href) => {
+        if (href === '/') return location.pathname === '/';
+        return location.pathname.startsWith(href);
+    };
+
     return (
         <>
             <header className="nav">
                 <div className="container nav-container">
                     {/* Logo */}
                     <Link to="/" className="flex items-center gap-3">
-                        <div
+                        <img
+                            src={mitsLogo}
+                            alt="MITS Gwalior"
                             style={{
-                                width: 36,
-                                height: 36,
-                                borderRadius: 8,
-                                background: 'var(--primary-600)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
+                                width: 40,
+                                height: 40,
+                                borderRadius: '50%',
+                                objectFit: 'contain',
                             }}
-                        >
-                            <span style={{ color: 'white', fontWeight: 700, fontSize: 16 }}>U</span>
-                        </div>
+                        />
                         <div className="hide-mobile">
                             <span style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>
                                 UEMS
                             </span>
-                            <span className="muted" style={{ marginLeft: 8 }}>MITS Gwalior</span>
+                            <span className="muted" style={{ marginLeft: 8, fontSize: 13 }}>MITS Gwalior</span>
                         </div>
                     </Link>
 
@@ -67,9 +70,8 @@ export default function Navbar() {
                             <Link
                                 key={link.name}
                                 to={link.href}
-                                className={`nav-link ${location.pathname.startsWith(link.href) ? 'active' : ''}`}
+                                className={`nav-link ${isActive(link.href) ? 'active' : ''}`}
                             >
-                                <link.icon style={{ width: 16, height: 16 }} />
                                 <span>{link.name}</span>
                             </Link>
                         ))}
@@ -90,120 +92,45 @@ export default function Navbar() {
                             )}
                         </button>
 
-                        {/* Notifications */}
-                        {isAuthenticated && (
-                            <button className="btn btn-ghost btn-icon-sm" style={{ position: 'relative' }}>
-                                <Bell style={{ width: 18, height: 18 }} />
-                                <span
-                                    style={{
-                                        position: 'absolute',
-                                        top: 6,
-                                        right: 6,
-                                        width: 8,
-                                        height: 8,
-                                        borderRadius: '50%',
-                                        background: 'var(--error)',
-                                    }}
-                                />
-                            </button>
-                        )}
-
                         {/* Auth Buttons / User Menu */}
                         {isAuthenticated ? (
-                            <div style={{ position: 'relative' }}>
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setDropdownOpen(!dropdownOpen);
-                                    }}
-                                    className="flex items-center gap-2"
-                                    style={{
-                                        padding: '6px 12px 6px 6px',
-                                        borderRadius: 'var(--radius-full)',
-                                        background: 'var(--bg-secondary)',
-                                        border: '1px solid var(--border)',
-                                        cursor: 'pointer',
-                                    }}
+                            <>
+                                {/* Dashboard Button */}
+                                <Link
+                                    to="/dashboard"
+                                    className="btn btn-primary hide-mobile"
+                                    style={{ gap: 'var(--space-2)' }}
                                 >
-                                    <div className="avatar avatar-sm">
-                                        {user?.profile?.firstName?.[0] || 'U'}
-                                    </div>
-                                    <ChevronDown style={{ width: 14, height: 14, color: 'var(--text-muted)' }} />
+                                    <User style={{ width: 16, height: 16 }} />
+                                    Dashboard
+                                </Link>
+
+                                {/* Logout Link */}
+                                <button
+                                    onClick={handleLogout}
+                                    className="btn btn-ghost hide-mobile"
+                                    style={{ color: 'var(--text-secondary)' }}
+                                >
+                                    <LogOut style={{ width: 16, height: 16 }} />
+                                    Logout
                                 </button>
 
-                                {dropdownOpen && (
-                                    <div
-                                        style={{
-                                            position: 'absolute',
-                                            right: 0,
-                                            top: 'calc(100% + 8px)',
-                                            width: 220,
-                                            background: 'var(--surface)',
-                                            border: '1px solid var(--border)',
-                                            borderRadius: 'var(--radius-lg)',
-                                            boxShadow: 'var(--shadow-lg)',
-                                            overflow: 'hidden',
-                                            zIndex: 'var(--z-dropdown)',
-                                        }}
-                                    >
-                                        <div style={{ padding: 'var(--space-4)', borderBottom: '1px solid var(--border)' }}>
-                                            <p style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
-                                                {user?.profile?.firstName} {user?.profile?.lastName}
-                                            </p>
-                                            <p className="muted">{user?.email}</p>
-                                        </div>
-                                        <div style={{ padding: 'var(--space-2)' }}>
-                                            <Link
-                                                to="/dashboard"
-                                                onClick={() => setDropdownOpen(false)}
-                                                style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: 'var(--space-3)',
-                                                    padding: 'var(--space-2) var(--space-3)',
-                                                    borderRadius: 'var(--radius-md)',
-                                                    color: 'var(--text-secondary)',
-                                                    textDecoration: 'none',
-                                                }}
-                                                onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-secondary)'}
-                                                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                                            >
-                                                <User style={{ width: 16, height: 16 }} />
-                                                <span>Dashboard</span>
-                                            </Link>
-                                            <button
-                                                onClick={handleLogout}
-                                                style={{
-                                                    width: '100%',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: 'var(--space-3)',
-                                                    padding: 'var(--space-2) var(--space-3)',
-                                                    borderRadius: 'var(--radius-md)',
-                                                    color: 'var(--error)',
-                                                    background: 'transparent',
-                                                    border: 'none',
-                                                    cursor: 'pointer',
-                                                    fontSize: 'inherit',
-                                                    fontFamily: 'inherit',
-                                                }}
-                                                onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-secondary)'}
-                                                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                                            >
-                                                <X style={{ width: 16, height: 16 }} />
-                                                <span>Logout</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
+                                {/* User Avatar for small indicator */}
+                                <div
+                                    className="avatar avatar-sm hide-desktop"
+                                    style={{ cursor: 'pointer' }}
+                                    onClick={() => navigate('/dashboard')}
+                                >
+                                    {user?.profile?.firstName?.[0] || 'U'}
+                                </div>
+                            </>
                         ) : (
                             <div className="flex items-center gap-2 hide-mobile">
                                 <Link to="/login" className="btn btn-ghost">
                                     Login
                                 </Link>
                                 <Link to="/register" className="btn btn-primary">
-                                    Sign Up
+                                    Dashboard
                                 </Link>
                             </div>
                         )}
@@ -269,7 +196,16 @@ export default function Navbar() {
                             ))}
                         </nav>
 
-                        {!isAuthenticated && (
+                        {isAuthenticated ? (
+                            <div style={{ marginTop: 'var(--space-8)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                                <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)} className="btn btn-primary" style={{ justifyContent: 'center' }}>
+                                    Dashboard
+                                </Link>
+                                <button onClick={() => { handleLogout(); setMobileMenuOpen(false); }} className="btn btn-secondary" style={{ justifyContent: 'center' }}>
+                                    Logout
+                                </button>
+                            </div>
+                        ) : (
                             <div style={{ marginTop: 'var(--space-8)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
                                 <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="btn btn-secondary" style={{ justifyContent: 'center' }}>
                                     Login

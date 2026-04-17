@@ -1,34 +1,62 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Users, Calendar, MessageCircle, Settings, UserPlus, Crown, Shield } from 'lucide-react';
-import { clubs, clubCategories } from '../../data/clubs';
-
-// Mock members
-const mockMembers = [
-    { id: 1, name: 'Rahul Sharma', role: 'President', year: '4th Year' },
-    { id: 2, name: 'Priya Singh', role: 'Vice President', year: '4th Year' },
-    { id: 3, name: 'Amit Kumar', role: 'Secretary', year: '3rd Year' },
-    { id: 4, name: 'Sneha Patel', role: 'Treasurer', year: '3rd Year' },
-    { id: 5, name: 'Vikram Joshi', role: 'Tech Lead', year: '3rd Year' },
-    { id: 6, name: 'Ananya Gupta', role: 'Member', year: '2nd Year' },
-    { id: 7, name: 'Rohan Verma', role: 'Member', year: '2nd Year' },
-    { id: 8, name: 'Kavya Reddy', role: 'Member', year: '2nd Year' },
-];
+import { ArrowLeft, Users, Calendar, MessageCircle, UserPlus, Crown, Shield } from 'lucide-react';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { clubCategories } from '../../data/clubs';
+import { clubService } from '../../services/clubService';
+import { useAuthStore } from '../../hooks/useStore';
+import { toast } from 'react-toastify';
 
 const tabs = ['Overview', 'Members', 'Events', 'Chat'];
 
 export default function ClubDetailPage() {
     const { slug } = useParams();
     const [activeTab, setActiveTab] = useState('Overview');
+    const { isAuthenticated } = useAuthStore();
 
-    const club = clubs.find((c) => c.id === slug) || clubs[0];
-    const category = clubCategories[club.category];
+    const { data, isLoading, error } = useQuery({
+        queryKey: ['club', slug],
+        queryFn: () => clubService.getClubBySlug(slug),
+    });
+
+    const joinMutation = useMutation({
+        mutationFn: () => clubService.joinClub(slug, 'I would like to join this club.'),
+        onSuccess: () => toast.success('Join request sent!'),
+        onError: (err) => toast.error(err.response?.data?.message || 'Failed to join club.')
+    });
+
+    if (isLoading) {
+        return (
+            <div className="section">
+                <div className="container" style={{ display: 'flex', justifyContent: 'center', paddingTop: 100 }}>
+                    <div className="avatar avatar-lg" style={{ animation: 'pulse 1.5s infinite', background: '#ccc' }}></div>
+                </div>
+            </div>
+        );
+    }
+
+    if (error || !data?.success) {
+        return (
+            <div className="section">
+                <div className="container">
+                    <div className="empty-state">
+                        <h3>Club not found</h3>
+                        <Link to="/clubs" className="btn btn-primary mt-4">Browse Clubs</Link>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    const club = data.club;
+    const category = clubCategories[club.category] || { name: 'Club', icon: '✨' };
+    const members = data.members || [];
+    const events = data.events || [];
 
     const getRoleBadge = (role) => {
-        if (role === 'President') return { icon: Crown, type: 'badge-warning' };
-        if (role === 'Vice President' || role === 'Secretary' || role === 'Treasurer' || role === 'Tech Lead')
-            return { icon: Shield, type: 'badge-primary' };
-        return null;
+        if (role === 'head') return { icon: Crown, type: 'badge-warning' };
+        if (role === 'admin') return { icon: Shield, type: 'badge-primary' };
+        return null; // For 'member'
     };
 
     return (
@@ -67,28 +95,38 @@ export default function ClubDetailPage() {
                             fontSize: 32,
                         }}
                     >
-                        {category?.icon || '🎯'}
+                        {category?.icon}
                     </div>
 
                     <div style={{ flex: 1, minWidth: 200 }}>
                         <h1 className="h2">{club.name}</h1>
                         <p className="body" style={{ marginTop: 'var(--space-1)' }}>
-                            Faculty Coordinator: <strong>{club.coordinator}</strong>
+                            Faculty Coordinator: <strong>{club.coordinator || 'TBA'}</strong>
                         </p>
                         <span className="badge badge-primary" style={{ marginTop: 'var(--space-2)' }}>
-                            {category?.name || 'Club'}
+                            {category?.name}
                         </span>
                     </div>
 
                     <div className="flex gap-4">
-                        <button className="btn btn-primary">
+                        <button 
+                            className="btn btn-primary"
+                            onClick={() => {
+                                if (!isAuthenticated) {
+                                    toast.info("Please login to join the club");
+                                    return;
+                                }
+                                joinMutation.mutate();
+                            }}
+                            disabled={joinMutation.isPending}
+                        >
                             <UserPlus style={{ width: 16, height: 16 }} />
-                            Join Club
+                            {joinMutation.isPending ? 'Requesting...' : 'Join Club'}
                         </button>
-                        <button className="btn btn-secondary">
+                        <Link to="/dashboard/chat" className="btn btn-secondary" style={{ textDecoration: 'none' }}>
                             <MessageCircle style={{ width: 16, height: 16 }} />
                             Chat
-                        </button>
+                        </Link>
                     </div>
                 </div>
 
@@ -126,15 +164,20 @@ export default function ClubDetailPage() {
                             <h2 className="h3" style={{ marginBottom: 'var(--space-4)' }}>
                                 About
                             </h2>
-                            <p className="body">
-                                {club.name} is one of the most active student organizations at MITS Gwalior.
-                                We are dedicated to fostering innovation, learning, and collaboration among students
-                                interested in {category?.name?.toLowerCase() || 'various activities'}.
+                            <p className="body whitespace-pre-line">
+                                {club.fullDescription || club.description}
                             </p>
-                            <p className="body" style={{ marginTop: 'var(--space-4)' }}>
-                                Our club organizes regular workshops, competitions, and networking events to help
-                                students develop their skills and connect with industry professionals.
-                            </p>
+                            
+                            {club.activities?.length > 0 && (
+                                <>
+                                    <h3 className="h4 mt-6 mb-2">Key Activities</h3>
+                                    <ul className="list-disc pl-5">
+                                        {club.activities.map((act, i) => (
+                                            <li key={i} className="mb-1">{act}</li>
+                                        ))}
+                                    </ul>
+                                </>
+                            )}
                         </div>
 
                         <div className="card">
@@ -157,7 +200,7 @@ export default function ClubDetailPage() {
                                         <Users style={{ width: 18, height: 18, color: 'var(--primary-600)' }} />
                                     </div>
                                     <div>
-                                        <p style={{ fontWeight: 600 }}>120+ Members</p>
+                                        <p style={{ fontWeight: 600 }}>{club.memberCount || members.length} Members</p>
                                         <p className="muted" style={{ fontSize: 13 }}>Active members</p>
                                     </div>
                                 </div>
@@ -176,8 +219,8 @@ export default function ClubDetailPage() {
                                         <Calendar style={{ width: 18, height: 18, color: 'var(--primary-600)' }} />
                                     </div>
                                     <div>
-                                        <p style={{ fontWeight: 600 }}>15+ Events</p>
-                                        <p className="muted" style={{ fontSize: 13 }}>This year</p>
+                                        <p style={{ fontWeight: 600 }}>{events.length} Events</p>
+                                        <p className="muted" style={{ fontSize: 13 }}>Hosted here</p>
                                     </div>
                                 </div>
                             </div>
@@ -187,59 +230,68 @@ export default function ClubDetailPage() {
 
                 {activeTab === 'Members' && (
                     <div>
-                        {/* Core Team */}
-                        <h2 className="h3" style={{ marginBottom: 'var(--space-6)' }}>Core Team</h2>
-                        <div className="grid grid-4" style={{ marginBottom: 'var(--space-8)' }}>
-                            {mockMembers.filter((m) => m.role !== 'Member').map((member) => {
-                                const badge = getRoleBadge(member.role);
-                                return (
-                                    <div key={member.id} className="card text-center">
-                                        <div
-                                            className="avatar avatar-lg"
-                                            style={{ margin: '0 auto var(--space-3)' }}
-                                        >
-                                            {member.name.split(' ').map((n) => n[0]).join('')}
-                                        </div>
-                                        <h4 className="h4">{member.name}</h4>
-                                        <div className="flex items-center justify-center gap-2 mt-2">
-                                            {badge && <badge.icon style={{ width: 12, height: 12, color: 'var(--primary-600)' }} />}
-                                            <span className="muted" style={{ fontSize: 13 }}>{member.role}</span>
-                                        </div>
-                                        <p className="muted" style={{ fontSize: 12 }}>{member.year}</p>
-                                    </div>
-                                );
-                            })}
-                        </div>
-
-                        {/* All Members Table */}
-                        <h2 className="h3" style={{ marginBottom: 'var(--space-6)' }}>All Members</h2>
-                        <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-                            <table className="table">
-                                <thead>
-                                    <tr>
-                                        <th>Member</th>
-                                        <th>Role</th>
-                                        <th>Year</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {mockMembers.map((member) => (
-                                        <tr key={member.id}>
-                                            <td>
-                                                <div className="flex items-center gap-4">
-                                                    <div className="avatar avatar-sm">
-                                                        {member.name.split(' ').map((n) => n[0]).join('')}
-                                                    </div>
-                                                    <span>{member.name}</span>
+                        {members.length === 0 ? (
+                            <div className="empty-state">
+                                <Users className="empty-state-icon" />
+                                <h3 className="empty-state-title">No members yet</h3>
+                                <p className="empty-state-text">Be the first to join this club!</p>
+                            </div>
+                        ) : (
+                            <>
+                                {/* Core Team */}
+                                <h2 className="h3" style={{ marginBottom: 'var(--space-6)' }}>Core Team</h2>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-6" style={{ marginBottom: 'var(--space-8)' }}>
+                                    {members.filter((m) => m.role !== 'member').map((member) => {
+                                        const badge = getRoleBadge(member.role);
+                                        return (
+                                            <div key={member.user._id} className="card text-center">
+                                                <div
+                                                    className="avatar avatar-lg"
+                                                    style={{ margin: '0 auto var(--space-3)' }}
+                                                >
+                                                    {member.user.name[0]}
                                                 </div>
-                                            </td>
-                                            <td>{member.role}</td>
-                                            <td>{member.year}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                                                <h4 className="h4 line-clamp-1">{member.user.name}</h4>
+                                                <div className="flex items-center justify-center gap-2 mt-2">
+                                                    {badge && <badge.icon style={{ width: 12, height: 12, color: 'var(--primary-600)' }} />}
+                                                    <span className="muted capitalize" style={{ fontSize: 13 }}>{member.role}</span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+
+                                {/* All Members Table */}
+                                <h2 className="h3" style={{ marginBottom: 'var(--space-6)' }}>All Members</h2>
+                                <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+                                    <table className="table w-full">
+                                        <thead>
+                                            <tr className="text-left bg-gray-50 border-b">
+                                                <th className="p-4 rounded-tl-xl text-gray-500 font-medium text-sm">Member</th>
+                                                <th className="p-4 text-gray-500 font-medium text-sm">Role</th>
+                                                <th className="p-4 rounded-tr-xl text-gray-500 font-medium text-sm">Joined</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {members.map((member) => (
+                                                <tr key={member.user._id} className="border-b last:border-0">
+                                                    <td className="p-4">
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="avatar avatar-sm">
+                                                                {member.user.name[0]}
+                                                            </div>
+                                                            <span className="font-medium text-gray-800">{member.user.name}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-4 capitalize text-gray-600">{member.role}</td>
+                                                    <td className="p-4 text-gray-500">{new Date(member.joinedAt).toLocaleDateString()}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </>
+                        )}
                     </div>
                 )}
 
@@ -256,7 +308,17 @@ export default function ClubDetailPage() {
                         <MessageCircle className="empty-state-icon" />
                         <h3 className="empty-state-title">Club Chat</h3>
                         <p className="empty-state-text">Join the club to access the chat feature</p>
-                        <button className="btn btn-primary mt-6">
+                        <button 
+                            className="btn btn-primary mt-6"
+                            onClick={() => {
+                                if (!isAuthenticated) {
+                                    toast.info("Please login to join the club");
+                                } else {
+                                    joinMutation.mutate();
+                                }
+                            }}
+                            disabled={joinMutation.isPending}
+                        >
                             <UserPlus style={{ width: 16, height: 16 }} />
                             Join Club to Chat
                         </button>

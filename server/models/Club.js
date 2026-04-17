@@ -16,12 +16,18 @@ const clubSchema = new mongoose.Schema({
     category: {
         type: String,
         required: true,
-        enum: ['technical', 'cultural', 'sports', 'professional', 'literary', 'social', 'other'],
+        enum: ['tech', 'cultural', 'sports', 'professional', 'social', 'creative', 'academic', 'wellness', 'other'],
     },
     description: {
         type: String,
         default: '',
     },
+    fullDescription: {
+        type: String,
+        default: '',
+    },
+    activities: [String],
+    achievements: [String],
     coordinator: {
         type: String, // Faculty coordinator name
         required: true,

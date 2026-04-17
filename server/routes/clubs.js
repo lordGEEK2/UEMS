@@ -34,6 +34,27 @@ router.get('/', async (req, res) => {
     }
 });
 
+// @route   GET /api/clubs/mine
+// @desc    Get club managed by current user
+// @access  Private
+router.get('/mine', protect, async (req, res) => {
+    try {
+        const club = await Club.findOne({
+            'members.user': req.user._id,
+        })
+        .populate('members.user', 'profile.firstName profile.lastName email name')
+        .populate('pendingRequests.user', 'profile.firstName profile.lastName email name');
+
+        if (!club) {
+            return res.status(404).json({ message: 'No club found for this user' });
+        }
+
+        res.json({ success: true, club });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+});
+
 // @route   GET /api/clubs/:slug
 // @desc    Get club by slug
 // @access  Public

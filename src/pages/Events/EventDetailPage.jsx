@@ -1,42 +1,43 @@
 import { useParams, Link } from 'react-router-dom';
 import { Calendar, Clock, MapPin, Users, ArrowLeft, Share2, Heart } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { eventService } from '../../services/eventService';
 
 export default function EventDetailPage() {
     const { slug } = useParams();
 
-    // Mock event data
-    const event = {
-        id: 1,
-        slug: slug,
-        title: 'TechFest 2026',
-        description: `Join us for the biggest technology festival of the year! TechFest 2026 brings together the brightest minds from across India for a celebration of innovation, creativity, and technology.
+    const { data, isLoading, error } = useQuery({
+        queryKey: ['event', slug],
+        queryFn: () => eventService.getEventBySlug(slug)
+    });
 
-This year's edition features:
-• 24-hour Hackathon with ₹1,00,000+ in prizes
-• Workshops on AI/ML, Cloud Computing, and Web3
-• Tech talks from industry leaders
-• Project exhibitions and competitions
-• Networking sessions with startup founders
+    if (isLoading) {
+        return (
+            <div className="section">
+                <div className="container" style={{ display: 'flex', justifyContent: 'center', paddingTop: 100 }}>
+                    <div className="avatar avatar-lg" style={{ animation: 'pulse 1.5s infinite', background: '#ccc' }}></div>
+                </div>
+            </div>
+        );
+    }
 
-Whether you're a coding enthusiast, a tech entrepreneur, or just curious about the future of technology, TechFest 2026 has something for everyone.`,
-        category: 'Technology',
-        date: '2026-03-15',
-        endDate: '2026-03-17',
-        time: '09:00 AM',
-        venue: 'Main Auditorium, MITS Gwalior',
-        club: 'GDSC MITS',
-        registrations: 450,
-        maxRegistrations: 500,
-        price: 299,
-        organizer: {
-            name: 'Dr. R S Jadon',
-            role: 'Faculty Coordinator',
-        },
-        tags: ['Hackathon', 'Workshops', 'Tech Talks', 'Networking'],
-    };
+    if (error || !data?.success) {
+        return (
+            <div className="section">
+                <div className="container">
+                    <div className="empty-state">
+                        <h3>Event not found</h3>
+                        <Link to="/events" className="btn btn-primary mt-4">Browse Events</Link>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
-    const spotsLeft = event.maxRegistrations - event.registrations;
-    const percentFilled = Math.round((event.registrations / event.maxRegistrations) * 100);
+    const event = data.event;
+    const registrationsCount = event.registrations?.length || 0;
+    const spotsLeft = event.maxRegistrations - registrationsCount;
+    const percentFilled = Math.round((registrationsCount / event.maxRegistrations) * 100);
 
     return (
         <div className="section">
@@ -69,7 +70,7 @@ Whether you're a coding enthusiast, a tech entrepreneur, or just curious about t
                                 {event.title}
                             </h1>
                             <p className="body" style={{ color: 'var(--text-secondary)' }}>
-                                Organized by <strong style={{ color: 'var(--text-primary)' }}>{event.club}</strong>
+                                Organized by <strong style={{ color: 'var(--text-primary)' }}>{event.club?.name || 'Unknown'}</strong>
                             </p>
                         </div>
 
@@ -166,7 +167,7 @@ Whether you're a coding enthusiast, a tech entrepreneur, or just curious about t
                                 <div>
                                     <p className="muted" style={{ fontSize: 12 }}>Registrations</p>
                                     <p style={{ fontWeight: 500 }}>
-                                        {event.registrations}/{event.maxRegistrations}
+                                        {registrationsCount}/{event.maxRegistrations}
                                     </p>
                                 </div>
                             </div>
@@ -187,7 +188,7 @@ Whether you're a coding enthusiast, a tech entrepreneur, or just curious about t
 
                         {/* Tags */}
                         <div className="flex gap-2" style={{ flexWrap: 'wrap' }}>
-                            {event.tags.map((tag) => (
+                            {(event.tags || []).map((tag) => (
                                 <span key={tag} className="badge">
                                     {tag}
                                 </span>
@@ -215,7 +216,7 @@ Whether you're a coding enthusiast, a tech entrepreneur, or just curious about t
                             {/* Progress */}
                             <div style={{ marginBottom: 'var(--space-6)' }}>
                                 <div className="flex justify-between mb-2" style={{ fontSize: 13 }}>
-                                    <span className="muted">{event.registrations} registered</span>
+                                    <span className="muted">{registrationsCount} registered</span>
                                     <span style={{ fontWeight: 500 }}>{percentFilled}%</span>
                                 </div>
                                 <div
@@ -263,10 +264,10 @@ Whether you're a coding enthusiast, a tech entrepreneur, or just curious about t
                                     Organized by
                                 </p>
                                 <div className="flex items-center gap-4">
-                                    <div className="avatar">{event.club[0]}</div>
+                                    <div className="avatar">{(event.club?.name || 'U')[0]}</div>
                                     <div>
-                                        <p style={{ fontWeight: 500 }}>{event.club}</p>
-                                        <p className="muted" style={{ fontSize: 13 }}>{event.organizer.name}</p>
+                                        <p style={{ fontWeight: 500 }}>{event.club?.name || 'Unknown'}</p>
+                                        <p className="muted" style={{ fontSize: 13 }}>{event.club?.coordinator || 'TBA'}</p>
                                     </div>
                                 </div>
                             </div>

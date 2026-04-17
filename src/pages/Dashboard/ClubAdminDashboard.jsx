@@ -1,43 +1,63 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
     Calendar, Users, Settings, Plus, Edit, Trash2,
     Eye, MessageCircle, UserPlus, Crown, Shield, MoreVertical
 } from 'lucide-react';
 import { useAuthStore } from '../../hooks/useStore';
-
-const mockClubData = {
-    name: 'GDSC MITS',
-    members: 120,
-    events: 15,
-    pendingRequests: 5,
-};
-
-const mockMembers = [
-    { id: 1, name: 'Rahul Sharma', role: 'head', email: 'rahul@mits.ac.in', joined: '2024-01-15' },
-    { id: 2, name: 'Priya Singh', role: 'admin', email: 'priya@mits.ac.in', joined: '2024-02-20' },
-    { id: 3, name: 'Amit Kumar', role: 'member', email: 'amit@mits.ac.in', joined: '2024-03-10' },
-    { id: 4, name: 'Sneha Patel', role: 'member', email: 'sneha@mits.ac.in', joined: '2024-03-15' },
-    { id: 5, name: 'Vikram Joshi', role: 'member', email: 'vikram@mits.ac.in', joined: '2024-04-01' },
-];
-
-const pendingRequests = [
-    { id: 1, name: 'Ananya Gupta', email: 'ananya@mits.ac.in', year: '2nd Year', department: 'CSE' },
-    { id: 2, name: 'Rohan Verma', email: 'rohan@mits.ac.in', year: '3rd Year', department: 'IT' },
-];
+import { clubService } from '../../services/clubService';
+import { toast } from 'react-toastify';
 
 export default function ClubAdminDashboard() {
     const { role } = useAuthStore();
     const location = useLocation();
     const [activeTab, setActiveTab] = useState('overview');
+    const queryClient = useQueryClient();
 
     const isHead = role === 'club_head';
     const isAdmin = role === 'club_admin' || isHead;
 
-    // Determine active section from URL
-    const currentSection = location.pathname.includes('/chat') ? 'chat' :
-        location.pathname.includes('/settings') ? 'settings' : 'overview';
+    const { data: response, isLoading, error } = useQuery({
+        queryKey: ['myClub'],
+        queryFn: clubService.getMyClub,
+        retry: 1
+    });
+
+    const approveMutation = useMutation({
+        mutationFn: ({ slug, userId }) => clubService.approveMember(slug, userId),
+        onSuccess: () => {
+            toast.success('Member approved');
+            queryClient.invalidateQueries(['myClub']);
+        },
+        onError: (err) => {
+            toast.error(err.response?.data?.message || 'Failed to approve member');
+        }
+    });
+
+    if (isLoading) {
+        return (
+            <div className="flex justify-center items-center h-64">
+                <div className="avatar avatar-lg animate-pulse bg-gray-200"></div>
+            </div>
+        );
+    }
+
+    if (error || !response?.club) {
+        return (
+            <div className="text-center py-12">
+                <Shield className="w-16 h-16 mx-auto text-primary opacity-50 mb-4" />
+                <h2 className="text-lg font-bold">No Club Assigned</h2>
+                <p className="text-secondary mt-2">You are not currently assigned as an admin to any club.</p>
+            </div>
+        );
+    }
+
+    const club = response.club;
+    const pendingRequests = club.pendingRequests || [];
+    const members = club.members || [];
+    const events = []; // Will fetch from eventService later
 
     return (
         <div className="space-y-8">
@@ -50,7 +70,7 @@ export default function ClubAdminDashboard() {
                 <div>
                     <div className="flex items-center gap-3">
                         <h1 className="text-2xl md:text-3xl font-bold font-display text-primary">
-                            {mockClubData.name}
+                            {club.name}
                         </h1>
                         {isHead && (
                             <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-yellow-500/10 text-yellow-500 text-xs font-medium">
@@ -69,14 +89,14 @@ export default function ClubAdminDashboard() {
                 </div>
 
                 <div className="flex gap-3">
-                    <button className="btn btn-secondary">
+                    <Link to="/dashboard/chat" className="btn btn-secondary" style={{ textDecoration: 'none' }}>
                         <MessageCircle className="w-4 h-4" />
                         <span>Club Chat</span>
-                    </button>
-                    <button className="btn btn-primary">
+                    </Link>
+                    <Link to="/dashboard/events/create" className="btn btn-primary" style={{ textDecoration: 'none' }}>
                         <Plus className="w-4 h-4" />
                         <span>Create Event</span>
-                    </button>
+                    </Link>
                 </div>
             </motion.div>
 
@@ -88,10 +108,10 @@ export default function ClubAdminDashboard() {
                 className="grid grid-cols-2 lg:grid-cols-4 gap-4"
             >
                 {[
-                    { label: 'Total Members', value: mockClubData.members, icon: Users, color: 'text-blue-500 bg-blue-500/10' },
-                    { label: 'Events', value: mockClubData.events, icon: Calendar, color: 'text-purple-500 bg-purple-500/10' },
-                    { label: 'Pending Requests', value: mockClubData.pendingRequests, icon: UserPlus, color: 'text-orange-500 bg-orange-500/10' },
-                    { label: 'Active Chats', value: 3, icon: MessageCircle, color: 'text-green-500 bg-green-500/10' },
+                    { label: 'Total Members', value: members.length, icon: Users, color: 'text-blue-500 bg-blue-500/10' },
+                    { label: 'Events', value: events.length, icon: Calendar, color: 'text-purple-500 bg-purple-500/10' },
+                    { label: 'Pending Requests', value: pendingRequests.length, icon: UserPlus, color: 'text-orange-500 bg-orange-500/10' },
+                    { label: 'Active Chats', value: 1, icon: MessageCircle, color: 'text-green-500 bg-green-500/10' },
                 ].map((stat, i) => (
                     <div key={i} className="glass-card">
                         <div className={`w-12 h-12 rounded-xl ${stat.color} flex items-center justify-center mb-4`}>
@@ -159,16 +179,23 @@ export default function ClubAdminDashboard() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {mockMembers.map((member) => (
-                                    <tr key={member.id} className="border-b border-primary/5 hover:bg-secondary/50">
+                                {members.map((member) => {
+                                    const user = member.user;
+                                    if (!user) return null;
+                                    return (
+                                    <tr key={member._id} className="border-b border-primary/5 hover:bg-secondary/50">
                                         <td className="py-4 px-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
-                                                    <span className="text-white font-medium text-sm">{member.name.split(' ').map(n => n[0]).join('')}</span>
+                                                    <span className="text-white font-medium text-sm">
+                                                        {user.name?.[0] || user.profile?.firstName?.[0] || '?'}
+                                                    </span>
                                                 </div>
                                                 <div>
-                                                    <p className="font-medium text-primary">{member.name}</p>
-                                                    <p className="text-xs text-secondary">{member.email}</p>
+                                                    <p className="font-medium text-primary">
+                                                        {user.name || `${user.profile?.firstName} ${user.profile?.lastName}`}
+                                                    </p>
+                                                    <p className="text-xs text-secondary">{user.email}</p>
                                                 </div>
                                             </div>
                                         </td>
@@ -185,7 +212,7 @@ export default function ClubAdminDashboard() {
                                             </span>
                                         </td>
                                         <td className="py-4 px-4 text-sm text-secondary">
-                                            {new Date(member.joined).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                            {new Date(member.joinedAt).toLocaleDateString()}
                                         </td>
                                         {isHead && (
                                             <td className="py-4 px-4 text-right">
@@ -195,7 +222,7 @@ export default function ClubAdminDashboard() {
                                             </td>
                                         )}
                                     </tr>
-                                ))}
+                                )})}
                             </tbody>
                         </table>
                     </div>
@@ -212,23 +239,32 @@ export default function ClubAdminDashboard() {
 
                     {pendingRequests.length > 0 ? (
                         <div className="space-y-4">
-                            {pendingRequests.map((request) => (
-                                <div key={request.id} className="flex items-center justify-between p-4 rounded-xl bg-secondary">
+                            {pendingRequests.map((request) => {
+                                const user = request.user;
+                                if (!user) return null;
+                                return (
+                                <div key={request._id} className="flex items-center justify-between p-4 rounded-xl bg-secondary">
                                     <div className="flex items-center gap-4">
                                         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
-                                            <span className="text-white font-medium">{request.name.split(' ').map(n => n[0]).join('')}</span>
+                                            <span className="text-white font-medium">{user.name?.[0] || '?'}</span>
                                         </div>
                                         <div>
-                                            <p className="font-semibold text-primary">{request.name}</p>
-                                            <p className="text-sm text-secondary">{request.department} • {request.year}</p>
+                                            <p className="font-semibold text-primary">{user.name}</p>
+                                            <p className="text-sm text-secondary">{request.message}</p>
                                         </div>
                                     </div>
                                     <div className="flex gap-2">
-                                        <button className="btn btn-primary btn-sm">Accept</button>
+                                        <button 
+                                            className="btn btn-primary btn-sm"
+                                            onClick={() => approveMutation.mutate({ slug: club.slug, userId: user._id })}
+                                            disabled={approveMutation.isPending}
+                                        >
+                                            Accept
+                                        </button>
                                         <button className="btn btn-secondary btn-sm">Reject</button>
                                     </div>
                                 </div>
-                            ))}
+                            )})}
                         </div>
                     ) : (
                         <div className="text-center py-8">
@@ -250,17 +286,12 @@ export default function ClubAdminDashboard() {
                     <div className="space-y-6">
                         <div className="input-group">
                             <label className="input-label">Club Name</label>
-                            <input type="text" defaultValue={mockClubData.name} className="input" />
+                            <input type="text" defaultValue={club.name} className="input" />
                         </div>
 
                         <div className="input-group">
                             <label className="input-label">Description</label>
-                            <textarea rows={4} className="input" placeholder="Describe your club..." />
-                        </div>
-
-                        <div className="input-group">
-                            <label className="input-label">Contact Email</label>
-                            <input type="email" placeholder="club@mits.ac.in" className="input" />
+                            <textarea rows={4} className="input" defaultValue={club.description} />
                         </div>
 
                         <div className="flex gap-3">
@@ -284,19 +315,9 @@ export default function ClubAdminDashboard() {
                     <div className="glass-card">
                         <h2 className="text-lg font-bold font-display text-primary mb-4">Recent Activity</h2>
                         <div className="space-y-3">
-                            {[
-                                { action: 'New member joined', user: 'Vikram Joshi', time: '2 hours ago' },
-                                { action: 'Event created', user: 'TechFest 2026', time: '1 day ago' },
-                                { action: 'Member promoted', user: 'Priya Singh to Admin', time: '3 days ago' },
-                            ].map((activity, i) => (
-                                <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-secondary">
-                                    <div className="w-2 h-2 rounded-full bg-indigo-500" />
-                                    <div className="flex-1">
-                                        <p className="text-sm text-primary">{activity.action}: <span className="font-medium">{activity.user}</span></p>
-                                        <p className="text-xs text-secondary">{activity.time}</p>
-                                    </div>
-                                </div>
-                            ))}
+                            <div className="text-center py-4 text-secondary">
+                                Activity feed coming soon...
+                            </div>
                         </div>
                     </div>
 
@@ -304,16 +325,26 @@ export default function ClubAdminDashboard() {
                         <h2 className="text-lg font-bold font-display text-primary mb-4">Quick Actions</h2>
                         <div className="grid grid-cols-2 gap-3">
                             {[
-                                { label: 'Create Event', icon: Plus },
-                                { label: 'View Members', icon: Users },
-                                { label: 'Club Chat', icon: MessageCircle },
-                                { label: 'Settings', icon: Settings },
-                            ].map((action, i) => (
-                                <button key={i} className="flex items-center gap-3 p-4 rounded-xl bg-secondary hover:bg-tertiary transition-colors">
-                                    <action.icon className="w-5 h-5 text-indigo-500" />
-                                    <span className="text-sm font-medium text-primary">{action.label}</span>
-                                </button>
-                            ))}
+                                { label: 'Create Event', icon: Plus, to: '/dashboard/events/create' },
+                                { label: 'View Members', icon: Users, action: () => setActiveTab('members') },
+                                { label: 'Club Chat', icon: MessageCircle, to: '/dashboard/chat' },
+                                ...(isHead ? [{ label: 'Settings', icon: Settings, action: () => setActiveTab('settings') }] : []),
+                            ].map((action, i) => {
+                                if (action.to) {
+                                    return (
+                                        <Link key={i} to={action.to} className="flex items-center gap-3 p-4 rounded-xl bg-secondary hover:bg-tertiary transition-colors" style={{ textDecoration: 'none' }}>
+                                            <action.icon className="w-5 h-5 text-indigo-500" />
+                                            <span className="text-sm font-medium text-primary">{action.label}</span>
+                                        </Link>
+                                    );
+                                }
+                                return (
+                                    <button onClick={action.action} key={i} className="flex items-center gap-3 p-4 rounded-xl bg-secondary hover:bg-tertiary transition-colors">
+                                        <action.icon className="w-5 h-5 text-indigo-500" />
+                                        <span className="text-sm font-medium text-primary">{action.label}</span>
+                                    </button>
+                                );
+                            })}
                         </div>
                     </div>
                 </motion.div>

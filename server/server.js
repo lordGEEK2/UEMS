@@ -32,6 +32,11 @@ app.use('/api/users', require('./routes/users'));
 app.use('/api/clubs', require('./routes/clubs'));
 app.use('/api/events', require('./routes/events'));
 app.use('/api/chat', require('./routes/chat'));
+app.use('/api/registrations', require('./routes/registrations'));
+app.use('/api/notifications', require('./routes/notifications'));
+app.use('/api/payments', require('./routes/payments'));
+app.use('/api/recruitments', require('./routes/recruitments'));
+app.use('/api/sponsorships', require('./routes/sponsorships'));
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -41,14 +46,10 @@ app.get('/api/health', (req, res) => {
 // Socket.io connection handling
 require('./config/socket')(io);
 
+const errorHandler = require('./middleware/errorHandler');
+
 // Error handling middleware
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({
-        message: 'Something went wrong!',
-        error: process.env.NODE_ENV === 'development' ? err.message : undefined
-    });
-});
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
