@@ -61,7 +61,7 @@ router.get('/mine', protect, async (req, res) => {
 router.get('/:slug', async (req, res) => {
     try {
         const club = await Club.findOne({ slug: req.params.slug })
-            .populate('members.user', 'profile.firstName profile.lastName email')
+            .populate('members.user', 'profile.firstName profile.lastName email name')
             .populate('chatRoom');
 
         if (!club) {

@@ -36,6 +36,7 @@ const clubSchema = new mongoose.Schema({
     members: [{
         user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
         role: { type: String, enum: ['member', 'admin', 'head'], default: 'member' },
+        title: { type: String }, // Custom role titles like "Web Master" or "Chair"
         joinedAt: { type: Date, default: Date.now },
     }],
     pendingRequests: [{

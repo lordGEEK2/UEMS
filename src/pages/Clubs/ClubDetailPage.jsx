@@ -254,7 +254,7 @@ export default function ClubDetailPage() {
                                                 <h4 className="h4 line-clamp-1">{member.user.name}</h4>
                                                 <div className="flex items-center justify-center gap-2 mt-2">
                                                     {badge && <badge.icon style={{ width: 12, height: 12, color: 'var(--primary-600)' }} />}
-                                                    <span className="muted capitalize" style={{ fontSize: 13 }}>{member.role}</span>
+                                                    <span className="muted capitalize" style={{ fontSize: 13 }}>{member.title || member.role}</span>
                                                 </div>
                                             </div>
                                         );
@@ -283,7 +283,7 @@ export default function ClubDetailPage() {
                                                             <span className="font-medium text-gray-800">{member.user.name}</span>
                                                         </div>
                                                     </td>
-                                                    <td className="p-4 capitalize text-gray-600">{member.role}</td>
+                                                    <td className="p-4 capitalize text-gray-600">{member.title || member.role}</td>
                                                     <td className="p-4 text-gray-500">{new Date(member.joinedAt).toLocaleDateString()}</td>
                                                 </tr>
                                             ))}
@@ -307,21 +307,40 @@ export default function ClubDetailPage() {
                     <div className="empty-state">
                         <MessageCircle className="empty-state-icon" />
                         <h3 className="empty-state-title">Club Chat</h3>
-                        <p className="empty-state-text">Join the club to access the chat feature</p>
-                        <button 
-                            className="btn btn-primary mt-6"
-                            onClick={() => {
-                                if (!isAuthenticated) {
-                                    toast.info("Please login to join the club");
-                                } else {
-                                    joinMutation.mutate();
-                                }
-                            }}
-                            disabled={joinMutation.isPending}
-                        >
-                            <UserPlus style={{ width: 16, height: 16 }} />
-                            Join Club to Chat
-                        </button>
+                        
+                        {members.some(m => m.user._id === useAuthStore.getState().user?.id) ? (
+                            <>
+                                <p className="empty-state-text">You are a member of this club!</p>
+                                <Link to="/dashboard/chat" className="btn btn-primary mt-6 text-decoration-none">
+                                    Open Group Chat
+                                </Link>
+                            </>
+                        ) : club.pendingRequests?.some(r => r.user === useAuthStore.getState().user?.id) ? (
+                            <>
+                                <p className="empty-state-text">Your request to join is pending approval by an admin.</p>
+                                <button className="btn btn-secondary mt-6" disabled>
+                                    Request Pending
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <p className="empty-state-text">Join the club to participate in the group chat.</p>
+                                <button 
+                                    className="btn btn-primary mt-6"
+                                    onClick={() => {
+                                        if (!isAuthenticated) {
+                                            toast.info("Please login to join the club");
+                                        } else {
+                                            joinMutation.mutate();
+                                        }
+                                    }}
+                                    disabled={joinMutation.isPending}
+                                >
+                                    <UserPlus style={{ width: 16, height: 16 }} />
+                                    Join Club to Chat
+                                </button>
+                            </>
+                        )}
                     </div>
                 )}
             </div>

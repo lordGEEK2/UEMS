@@ -36,7 +36,7 @@ export default function Footer() {
                 <div className="footer-bottom">
                     <span>© {new Date().getFullYear()} UEMS, MITS Gwalior</span>
                     <span style={{ color: 'var(--gray-600)' }}>|</span>
-                    <span>Developed by <Link to="/developers">Your Name</Link></span>
+                    <span>Developed by <Link to="/developers">Tanishq MIshra</Link></span>
                 </div>
             </div>
         </footer>
