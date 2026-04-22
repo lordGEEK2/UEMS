@@ -61,8 +61,6 @@ async function run() {
         // Clear existing members for a fresh start
         club.members = [];
         chatRoom.participants = [];
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash('password123', salt);
 
         console.log('Creating Core Team Users...');
         for (const member of team) {
@@ -77,14 +75,13 @@ async function run() {
                 user = new User({
                     name: member.name,
                     email,
-                    password: hashedPassword,
+                    password: 'password123',
                     role: 'student',
                     profile: {
                         firstName,
                         lastName,
-                        enrollmentNo: '0901' + member.branch + '21' + Math.floor(Math.random() * 1000),
-                        branch: member.branch.trim(),
-                        semester: 5,
+                        department: member.branch.trim(),
+                        year: '3',
                     }
                 });
                 await user.save();
@@ -110,14 +107,13 @@ async function run() {
             demoUser = new User({
                 name: 'Demo Student',
                 email: 'demo@mitsgwalior.in',
-                password: hashedPassword,
+                password: 'password123',
                 role: 'student',
                 profile: {
                     firstName: 'Demo',
                     lastName: 'Student',
-                    enrollmentNo: 'DEMO001',
-                    branch: 'CSE',
-                    semester: 3,
+                    department: 'CSE',
+                    year: '2',
                 }
             });
             await demoUser.save();

@@ -33,6 +33,16 @@ const userSchema = new mongoose.Schema({
         role: { type: String, enum: ['member', 'admin', 'head'], default: 'member' },
         joinedAt: { type: Date, default: Date.now },
     }],
+    university: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'University',
+        // Optional during migration phase, will be required for true SaaS enforced tenancy
+    },
+    gamification: {
+        points: { type: Number, default: 0 },
+        level: { type: Number, default: 1 },
+        badges: [{ type: String }]
+    },
     isActive: {
         type: Boolean,
         default: true,

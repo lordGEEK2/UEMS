@@ -33,9 +33,13 @@ export default function ChatPage() {
         });
 
         newSocket.on('newMessage', (message) => {
-            if (message.chatRoom === activeRoom?._id) {
-                setMessages((prev) => [...prev, message]);
-            }
+            setMessages((prevMessages) => {
+                // Only add if it belongs to the *currently active* room
+                if (activeRoom && message.chatRoom === activeRoom._id) {
+                    return [...prevMessages, message];
+                }
+                return prevMessages;
+            });
             // Update room's last message
             setRooms((prev) =>
                 prev.map((room) =>
@@ -55,7 +59,7 @@ export default function ChatPage() {
         return () => {
             newSocket.disconnect();
         };
-    }, [token, activeRoom?._id]);
+    }, [token, activeRoom]); // added activeRoom to deps for message closure 
 
     // Fetch rooms
     useEffect(() => {
@@ -80,7 +84,7 @@ export default function ChatPage() {
         }
     }, [token]);
 
-    // Fetch messages when room changes
+    // Fetch messages and handle room join when room changes
     useEffect(() => {
         const fetchMessages = async () => {
             if (!activeRoom) return;

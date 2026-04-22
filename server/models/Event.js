@@ -26,6 +26,10 @@ const eventSchema = new mongoose.Schema({
         ref: 'Club',
         required: true,
     },
+    university: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'University',
+    },
     organizers: [{
         user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
         role: String,

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, LogIn, User, Users, Shield } from 'lucide-react';
 import { useAuthStore } from '../../hooks/useStore';
+import api from '../../services/api';
 
 const loginTypes = [
     { id: 'student', label: 'Student', icon: User, description: 'Access events and clubs' },
@@ -34,26 +35,28 @@ export default function LoginPage() {
 
         setIsLoading(true);
 
-        // Simulate login
-        setTimeout(() => {
-            const role = loginType === 'club' ? 'club_member' : loginType === 'admin' ? 'super_admin' : 'student';
-
-            login(
-                {
-                    id: '1',
-                    email: formData.email,
-                    role,
-                    profile: {
-                        firstName: 'Demo',
-                        lastName: 'User',
-                    },
-                },
-                'demo-token'
-            );
-
+        try {
+            const response = await api.post('/auth/login', {
+                email: formData.email,
+                password: formData.password
+            });
+            
+            if (response.data.success) {
+                login(response.data.user, response.data.token);
+                navigate('/dashboard');
+            }
+        } catch (error) {
+            setErrors((prev) => ({ 
+                ...prev, 
+                email: error.response?.data?.message || 'Login failed. Please check credentials.' 
+            }));
+        } finally {
             setIsLoading(false);
-            navigate('/dashboard');
-        }, 1000);
+        }
+    };
+
+    const handleDemoLogin = () => {
+        setFormData({ email: 'demo@mitsgwalior.in', password: 'password123' });
     };
 
     return (
@@ -184,6 +187,18 @@ export default function LoginPage() {
                             }}
                         >
                             {showPassword ? <EyeOff style={{ width: 18, height: 18 }} /> : <Eye style={{ width: 18, height: 18 }} />}
+                        </button>
+                    </div>
+                    {errors.password && <p className="form-error">{errors.password}</p>}
+                    
+                    <div className="flex justify-end mt-2">
+                        <button
+                            type="button"
+                            onClick={handleDemoLogin}
+                            className="btn btn-secondary"
+                            style={{ fontSize: 13, padding: '4px 12px' }}
+                        >
+                            Use Demo Student Credentials
                         </button>
                     </div>
                     {errors.password && <p className="form-error">{errors.password}</p>}

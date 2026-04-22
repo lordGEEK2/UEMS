@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Code2, Mail, Linkedin, Github, Heart } from 'lucide-react';
 import tanishqPhoto from '../../assets/tanishq-developer.jpg';
+import abhishekPhoto from '../../assets/abhishek-developer.jpg';
 
 const developers = [
     {
@@ -14,6 +15,17 @@ const developers = [
             github: 'https://github.com/lordGEEK2',
         }
     },
+    {
+        name: 'Abhishek Jha',
+        role: 'Computer Science and Business Systems, 4th Semester',
+        avatar: abhishekPhoto,
+        gradient: 'gradient-purple',
+        socials: {
+            email: 'mailto:abhishek@mits.ac.in',
+            linkedin: '#',
+            github: '#',
+        }
+    },
 ];
 
 const cardVariants = {
@@ -25,10 +37,10 @@ const cardVariants = {
         transition: { duration: 0.5, ease: 'easeOut' }
     },
     hover: {
-        y: -15,
-        scale: 1.02,
-        boxShadow: '0 30px 60px rgba(0,0,0,0.15)',
-        transition: { type: 'spring', stiffness: 300, damping: 20 }
+        y: -5,
+        scale: 1.01,
+        boxShadow: '0 15px 30px rgba(0,0,0,0.1)',
+        transition: { duration: 0.3, ease: 'easeOut' }
     }
 };
 
@@ -57,7 +69,7 @@ export default function DevelopersPage() {
                             whileHover={{ scale: 1.05 }}
                         >
                             <Code2 size={16} />
-                            Meet the Developer
+                            Meet the Developers
                         </motion.div>
 
                         {/* Title */}
@@ -79,13 +91,13 @@ export default function DevelopersPage() {
                                 color: 'var(--text-secondary)'
                             }}
                         >
-                            This platform was developed with passion and dedication by a talented
-                            developer from MITS Gwalior.
+                            This platform was developed with passion and dedication by the talented
+                            developers from MITS Gwalior.
                         </p>
                     </motion.div>
 
-                    {/* Developer Card */}
-                    <div style={{ maxWidth: 400, margin: '0 auto' }}>
+                    {/* Developer Cards Grid */}
+                    <div className="grid grid-2" style={{ maxWidth: 840, margin: '0 auto', gap: 'var(--space-8)' }}>
                         {developers.map((dev, index) => (
                             <motion.div
                                 key={index}
@@ -101,8 +113,6 @@ export default function DevelopersPage() {
                                         src={dev.avatar}
                                         alt={dev.name}
                                         className="developer-card-avatar"
-                                        whileHover={{ scale: 1.1, rotate: 5 }}
-                                        transition={{ type: 'spring', stiffness: 300 }}
                                     />
                                 </div>
 

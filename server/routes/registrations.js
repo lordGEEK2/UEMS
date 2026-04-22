@@ -1,7 +1,8 @@
 const express = require('express');
 const Registration = require('../models/Registration');
 const Event = require('../models/Event');
-const { protect } = require('../middleware/auth');
+const { protect, authorize } = require('../middleware/auth');
+const logger = require('../config/logger');
 
 const router = express.Router();
 
@@ -128,23 +129,49 @@ router.put('/:id/cancel', protect, async (req, res) => {
 });
 
 // @route   PUT /api/registrations/:id/checkin
-// @desc    Check-in attendee
-// @access  Private (organizer)
-router.put('/:id/checkin', protect, async (req, res) => {
+// @desc    Check-in attendee (Supports manual and QR scan)
+// @access  Private (organizer/admin)
+router.put('/:id/checkin', protect, authorize('admin', 'super_admin', 'club_admin', 'club_head'), async (req, res) => {
     try {
-        const registration = await Registration.findById(req.params.id);
+        const registrationId = req.params.id;
+        
+        // Also support passing the scanned QR payload
+        const { scannedPayload } = req.body;
+        let query = { _id: registrationId };
+
+        if (scannedPayload) {
+            try {
+                const parsed = JSON.parse(scannedPayload);
+                query = { _id: parsed.regId, registrationNumber: parsed.regNumber };
+            } catch (e) {
+                return res.status(400).json({ success: false, message: 'Invalid QR Code payload' });
+            }
+        }
+
+        const registration = await Registration.findOne(query);
 
         if (!registration) {
-            return res.status(404).json({ message: 'Registration not found' });
+            return res.status(404).json({ success: false, message: 'Registration not found or invalid QR code' });
+        }
+
+        if (registration.status === 'attended') {
+            return res.status(400).json({ success: false, message: 'Attendee has already checked in', checkInTime: registration.checkInTime });
+        }
+
+        if (registration.status !== 'confirmed') {
+            return res.status(400).json({ success: false, message: `Cannot check in. Status is: ${registration.status}` });
         }
 
         registration.status = 'attended';
         registration.checkInTime = new Date();
         await registration.save();
 
-        res.json({ success: true, registration });
+        logger.info(`Check-in successful for user ${registration.user} at event ${registration.event}`);
+
+        res.json({ success: true, message: 'Check-in successful', registration });
     } catch (error) {
-        res.status(500).json({ message: 'Server error', error: error.message });
+        logger.error('Checkin error:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 });
 

@@ -6,12 +6,16 @@ import { clubCategories } from '../../data/clubs';
 import { clubService } from '../../services/clubService';
 import { useAuthStore } from '../../hooks/useStore';
 import { toast } from 'react-toastify';
+import ClubChatPanel from '../../components/chat/ClubChatPanel';
+import EventCard from '../../components/events/EventCard';
+import { motion } from 'framer-motion';
 
 const tabs = ['Overview', 'Members', 'Events', 'Chat'];
 
 export default function ClubDetailPage() {
     const { slug } = useParams();
     const [activeTab, setActiveTab] = useState('Overview');
+    const [memberSearch, setMemberSearch] = useState('');
     const { isAuthenticated } = useAuthStore();
 
     const { data, isLoading, error } = useQuery({
@@ -50,8 +54,14 @@ export default function ClubDetailPage() {
 
     const club = data.club;
     const category = clubCategories[club.category] || { name: 'Club', icon: '✨' };
-    const members = data.members || [];
+    const members = club.members || [];
     const events = data.events || [];
+
+    const filteredMembers = members.filter(m => {
+        const name = `${m.user?.profile?.firstName || ''} ${m.user?.profile?.lastName || ''}`.toLowerCase();
+        return name.includes(memberSearch.toLowerCase()) || 
+               (m.title && m.title.toLowerCase().includes(memberSearch.toLowerCase()));
+    });
 
     const getRoleBadge = (role) => {
         if (role === 'head') return { icon: Crown, type: 'badge-warning' };
@@ -249,9 +259,9 @@ export default function ClubDetailPage() {
                                                     className="avatar avatar-lg"
                                                     style={{ margin: '0 auto var(--space-3)' }}
                                                 >
-                                                    {member.user.name[0]}
+                                                    {member.user?.profile?.firstName?.[0] || '?'}
                                                 </div>
-                                                <h4 className="h4 line-clamp-1">{member.user.name}</h4>
+                                                <h4 className="h4 line-clamp-1">{member.user?.profile?.firstName} {member.user?.profile?.lastName}</h4>
                                                 <div className="flex items-center justify-center gap-2 mt-2">
                                                     {badge && <badge.icon style={{ width: 12, height: 12, color: 'var(--primary-600)' }} />}
                                                     <span className="muted capitalize" style={{ fontSize: 13 }}>{member.title || member.role}</span>
@@ -262,31 +272,48 @@ export default function ClubDetailPage() {
                                 </div>
 
                                 {/* All Members Table */}
-                                <h2 className="h3" style={{ marginBottom: 'var(--space-6)' }}>All Members</h2>
+                                <div className="flex justify-between items-center mb-6">
+                                    <h2 className="h3">All Members</h2>
+                                    <input 
+                                        type="text" 
+                                        placeholder="Search members..." 
+                                        className="input" 
+                                        style={{ maxWidth: '250px', padding: '8px 12px' }}
+                                        value={memberSearch}
+                                        onChange={(e) => setMemberSearch(e.target.value)}
+                                    />
+                                </div>
                                 <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
                                     <table className="table w-full">
                                         <thead>
                                             <tr className="text-left bg-gray-50 border-b">
                                                 <th className="p-4 rounded-tl-xl text-gray-500 font-medium text-sm">Member</th>
                                                 <th className="p-4 text-gray-500 font-medium text-sm">Role</th>
+                                                <th className="p-4 text-gray-500 font-medium text-sm hide-mobile">Department</th>
                                                 <th className="p-4 rounded-tr-xl text-gray-500 font-medium text-sm">Joined</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {members.map((member) => (
+                                            {filteredMembers.map((member) => (
                                                 <tr key={member.user._id} className="border-b last:border-0">
                                                     <td className="p-4">
                                                         <div className="flex items-center gap-4">
                                                             <div className="avatar avatar-sm">
-                                                                {member.user.name[0]}
+                                                                {member.user?.profile?.firstName?.[0] || '?'}
                                                             </div>
-                                                            <span className="font-medium text-gray-800">{member.user.name}</span>
+                                                            <span className="font-medium text-gray-800">{member.user?.profile?.firstName} {member.user?.profile?.lastName}</span>
                                                         </div>
                                                     </td>
                                                     <td className="p-4 capitalize text-gray-600">{member.title || member.role}</td>
+                                                    <td className="p-4 text-gray-500 hide-mobile">{member.user?.profile?.department || '-'}</td>
                                                     <td className="p-4 text-gray-500">{new Date(member.joinedAt).toLocaleDateString()}</td>
                                                 </tr>
                                             ))}
+                                            {filteredMembers.length === 0 && (
+                                                <tr>
+                                                    <td colSpan="4" className="text-center p-4 text-gray-500">No members found matching "{memberSearch}"</td>
+                                                </tr>
+                                            )}
                                         </tbody>
                                     </table>
                                 </div>
@@ -296,34 +323,45 @@ export default function ClubDetailPage() {
                 )}
 
                 {activeTab === 'Events' && (
-                    <div className="empty-state">
-                        <Calendar className="empty-state-icon" />
-                        <h3 className="empty-state-title">No upcoming events</h3>
-                        <p className="empty-state-text">Check back later for new events from {club.name}</p>
+                    <div className="grid grid-3">
+                        {events.length > 0 ? (
+                            events.map((event, index) => (
+                                <motion.div
+                                    key={event._id || event.id}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: index * 0.1 }}
+                                >
+                                    <EventCard event={event} index={index} />
+                                </motion.div>
+                            ))
+                        ) : (
+                            <div className="empty-state" style={{ gridColumn: '1 / -1' }}>
+                                <Calendar className="empty-state-icon" />
+                                <h3 className="empty-state-title">No events yet</h3>
+                                <p className="empty-state-text">Check back later for new events from {club.name}</p>
+                            </div>
+                        )}
                     </div>
                 )}
 
                 {activeTab === 'Chat' && (
-                    <div className="empty-state">
-                        <MessageCircle className="empty-state-icon" />
-                        <h3 className="empty-state-title">Club Chat</h3>
-                        
+                    <div>
                         {members.some(m => m.user._id === useAuthStore.getState().user?.id) ? (
-                            <>
-                                <p className="empty-state-text">You are a member of this club!</p>
-                                <Link to="/dashboard/chat" className="btn btn-primary mt-6 text-decoration-none">
-                                    Open Group Chat
-                                </Link>
-                            </>
+                            <ClubChatPanel clubId={club._id} />
                         ) : club.pendingRequests?.some(r => r.user === useAuthStore.getState().user?.id) ? (
-                            <>
+                            <div className="empty-state">
+                                <MessageCircle className="empty-state-icon" />
+                                <h3 className="empty-state-title">Club Chat</h3>
                                 <p className="empty-state-text">Your request to join is pending approval by an admin.</p>
                                 <button className="btn btn-secondary mt-6" disabled>
                                     Request Pending
                                 </button>
-                            </>
+                            </div>
                         ) : (
-                            <>
+                            <div className="empty-state">
+                                <MessageCircle className="empty-state-icon" />
+                                <h3 className="empty-state-title">Club Chat</h3>
                                 <p className="empty-state-text">Join the club to participate in the group chat.</p>
                                 <button 
                                     className="btn btn-primary mt-6"
@@ -339,7 +377,7 @@ export default function ClubDetailPage() {
                                     <UserPlus style={{ width: 16, height: 16 }} />
                                     Join Club to Chat
                                 </button>
-                            </>
+                            </div>
                         )}
                     </div>
                 )}

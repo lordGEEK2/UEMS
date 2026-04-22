@@ -26,26 +26,14 @@ export const useThemeStore = create(
     )
 );
 
-// Auth Store - User authentication state
-// Demo user for development
-const DEMO_USER = {
-    id: 'demo-user-001',
-    email: 'demo@mits.ac.in',
-    role: 'student',
-    profile: {
-        firstName: 'Demo',
-        lastName: 'User',
-        avatar: null,
-    },
-};
-
+// Auth Store - Real JWT authentication state (no more DEMO_USER)
 export const useAuthStore = create(
     persist(
         (set, get) => ({
-            user: DEMO_USER,
-            isAuthenticated: true,
-            token: 'demo-token-for-development',
-            role: 'student',
+            user: null,
+            isAuthenticated: false,
+            token: null,
+            role: null,
 
             login: (user, token) => set({
                 user,
@@ -61,17 +49,15 @@ export const useAuthStore = create(
                 role: null,
             }),
 
-            // Demo login - for development/testing
-            demoLogin: (role = 'student') => set({
-                user: { ...DEMO_USER, role },
-                token: 'demo-token-for-development',
-                isAuthenticated: true,
-                role,
-            }),
-
             updateUser: (userData) => set((state) => ({
-                user: { ...state.user, ...userData },
+                user: state.user ? { ...state.user, ...userData } : null,
             })),
+
+            // Check if user has a specific role (frontend guard helper)
+            hasRole: (...roles) => {
+                const state = get();
+                return state.user ? roles.includes(state.user.role) : false;
+            },
         }),
         {
             name: 'uems-auth',
@@ -149,3 +135,33 @@ export const useRegistrationStore = create((set, get) => ({
 
     setLoading: (loading) => set({ loading }),
 }));
+
+// Saved Events Store - Persistent list of favorited events
+export const useSavedEventsStore = create(
+    persist(
+        (set, get) => ({
+            savedEvents: [],
+            
+            toggleSaveEvent: (event) => {
+                const currentSaved = get().savedEvents;
+                const eventId = event._id || event.id; // Support both backend _id and frontend id
+                const isAlreadySaved = currentSaved.some(e => (e._id || e.id) === eventId);
+                
+                if (isAlreadySaved) {
+                    set({ savedEvents: currentSaved.filter(e => (e._id || e.id) !== eventId) });
+                } else {
+                    set({ savedEvents: [...currentSaved, event] });
+                }
+            },
+            
+            isSaved: (eventId) => {
+                return get().savedEvents.some(e => (e._id || e.id) === eventId);
+            },
+
+            clearSavedEvents: () => set({ savedEvents: [] })
+        }),
+        {
+            name: 'uems-saved-events',
+        }
+    )
+);

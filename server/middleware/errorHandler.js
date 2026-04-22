@@ -1,5 +1,11 @@
+const logger = require('../config/logger');
+
 const errorHandler = (err, req, res, next) => {
-    console.error(`[Error] ${err.name}: ${err.message}`);
+    logger.error(`${err.name}: ${err.message}`, { 
+        stack: err.stack,
+        path: req.path,
+        method: req.method
+    });
     
     // Mongoose bad ObjectId
     if (err.name === 'CastError') {
@@ -23,9 +29,14 @@ const errorHandler = (err, req, res, next) => {
         return res.status(401).json({ success: false, message: 'Invalid token. Please log in again.' });
     }
 
+    // Razorpay signature error (for payments phase 1.4)
+    if (err.name === 'SignatureVerificationError') {
+        return res.status(400).json({ success: false, message: 'Invalid payment signature' });
+    }
+
     res.status(err.statusCode || 500).json({
         success: false,
-        message: err.message || 'Server Error'
+        message: process.env.NODE_ENV === 'production' ? 'Server Error' : err.message
     });
 };
 

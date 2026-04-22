@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, Sun, Moon, Bell, User, Calendar, Users, Code2, Home, LogOut } from 'lucide-react';
+import { Menu, X, Sun, Moon, Bell, User, Calendar, Users, Code2, Home, LogOut, Heart } from 'lucide-react';
 import { useThemeStore, useUIStore, useAuthStore } from '../../hooks/useStore';
 import mitsLogo from '../../assets/mits-logo.png';
 
@@ -8,6 +8,7 @@ const navLinks = [
     { name: 'Home', href: '/', icon: Home },
     { name: 'Events', href: '/events', icon: Calendar },
     { name: 'Clubs', href: '/clubs', icon: Users },
+    { name: 'Saved', href: '/events/saved', icon: Heart },
     { name: 'Developers', href: '/developers', icon: Code2 },
 ];
 

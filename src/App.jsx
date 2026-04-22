@@ -11,6 +11,7 @@ import AuthLayout from './layouts/AuthLayout';
 import Home from './pages/Home';
 import EventsPage from './pages/Events/EventsPage';
 import EventDetailPage from './pages/Events/EventDetailPage';
+import SavedEventsPage from './pages/Events/SavedEventsPage';
 import ClubsPage from './pages/Clubs/ClubsPage';
 import ClubDetailPage from './pages/Clubs/ClubDetailPage';
 import RecruitmentsPage from './pages/Recruitments/RecruitmentsPage';
@@ -87,6 +88,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/events" element={<EventsPage />} />
           <Route path="/events/:slug" element={<EventDetailPage />} />
+          <Route path="/events/saved" element={<SavedEventsPage />} />
           <Route path="/clubs" element={<ClubsPage />} />
           <Route path="/clubs/:slug" element={<ClubDetailPage />} />
           <Route path="/recruitments" element={<RecruitmentsPage />} />

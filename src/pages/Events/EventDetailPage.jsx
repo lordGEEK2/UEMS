@@ -2,6 +2,9 @@ import { useParams, Link } from 'react-router-dom';
 import { Calendar, Clock, MapPin, Users, ArrowLeft, Share2, Heart } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { eventService } from '../../services/eventService';
+import { useSavedEventsStore } from '../../hooks/useStore';
+import { toast } from 'react-toastify';
+import { motion } from 'framer-motion';
 
 export default function EventDetailPage() {
     const { slug } = useParams();
@@ -10,6 +13,19 @@ export default function EventDetailPage() {
         queryKey: ['event', slug],
         queryFn: () => eventService.getEventBySlug(slug)
     });
+
+    const { toggleSaveEvent, isSaved } = useSavedEventsStore();
+    const saved = isSaved(data?.event?._id || data?.event?.id);
+
+    const handleToggleSave = () => {
+        if (!data?.event) return;
+        toggleSaveEvent(data.event);
+        if (!saved) {
+            toast.success('Event saved list!');
+        } else {
+            toast.info('Event removed list');
+        }
+    };
 
     if (isLoading) {
         return (
@@ -247,10 +263,26 @@ export default function EventDetailPage() {
                             </button>
 
                             <div className="flex gap-4">
-                                <button className="btn btn-secondary" style={{ flex: 1 }}>
-                                    <Heart style={{ width: 16, height: 16 }} />
-                                    Save
-                                </button>
+                                <motion.button 
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={handleToggleSave}
+                                    className="btn btn-secondary" 
+                                    style={{ 
+                                        flex: 1,
+                                        color: saved ? 'var(--error)' : 'inherit',
+                                        borderColor: saved ? 'var(--error)' : 'var(--border)'
+                                    }}
+                                >
+                                    <Heart 
+                                        style={{ 
+                                            width: 16, 
+                                            height: 16,
+                                            fill: saved ? 'var(--error)' : 'none'
+                                        }} 
+                                    />
+                                    {saved ? 'Saved' : 'Save'}
+                                </motion.button>
                                 <button className="btn btn-secondary" style={{ flex: 1 }}>
                                     <Share2 style={{ width: 16, height: 16 }} />
                                     Share

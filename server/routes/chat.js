@@ -48,6 +48,32 @@ router.get('/rooms/:id', protect, async (req, res) => {
     }
 });
 
+// @route   GET /api/chat/club/:clubId
+// @desc    Get chat room for a specific club
+// @access  Private
+router.get('/club/:clubId', protect, async (req, res) => {
+    try {
+        const room = await ChatRoom.findOne({
+            club: req.params.clubId,
+            type: 'club'
+        }).populate('participants', 'profile.firstName profile.lastName email')
+          .populate('club', 'name slug');
+
+        if (!room) {
+            return res.status(404).json({ message: 'Chat room not found for this club' });
+        }
+
+        // Check if user is participant
+        if (!room.participants.some(p => p._id.toString() === req.user._id.toString())) {
+            return res.status(403).json({ message: 'Not a participant of this chat room' });
+        }
+
+        res.json({ success: true, room });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+});
+
 // @route   GET /api/chat/rooms/:id/messages
 // @desc    Get messages for a chat room
 // @access  Private

@@ -1306,7 +1306,7 @@ select.input {
     border-radius: var(--radius-full);
     border: 4px solid white;
     object-fit: cover;
-    transform: translateY(50px);
+    transform: translateY(50%);
 }
 
 .developer-card-body {

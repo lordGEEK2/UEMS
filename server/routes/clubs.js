@@ -68,7 +68,12 @@ router.get('/:slug', async (req, res) => {
             return res.status(404).json({ message: 'Club not found' });
         }
 
-        res.json({ success: true, club });
+        // Fetch events for this club
+        const Event = require('../models/Event');
+        const events = await Event.find({ club: club._id })
+            .sort({ date: -1 }); // Show newest/upcoming first
+
+        res.json({ success: true, club, events });
     } catch (error) {
         res.status(500).json({ message: 'Server error', error: error.message });
     }
